@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>상생플러스 - 결제 운영 리스크 솔루션 파트너</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- html2pdf.js for PDF Download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #0f766e;
+            --primary-dark: #115e59;
+            --accent: #2dd4bf;
+            --bg-dark: #0f172a;
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #1e293b;
+            word-break: keep-all;
+            background-color: #f8fafc;
+            overflow-x: hidden;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+        
+        /* --- Scroll Snap Container --- */
+        .snap-container {
+            height: 100vh;
+            width: 100vw;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+        }
+        .snap-container::-webkit-scrollbar { display: none; }
+
+        section {
+            min-height: 100vh;
+            width: 100vw;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6rem 2rem;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- Animations --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 1s var(--ease-out-expo), transform 1s var(--ease-out-expo);
+            will-change: opacity, transform;
+        }
+        
+        section.active .reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .delay-100 { transition-delay: 0.1s; }
+        .delay-200 { transition-delay: 0.2s; }
+        .delay-300 { transition-delay: 0.3s; }
+        .delay-400 { transition-delay: 0.4s; }
+        .delay-500 { transition-delay: 0.5s; }
+
+        .text-shimmer {
+            background: linear-gradient(to right, #2dd4bf 0%, #fff 50%, #2dd4bf 100%);
+            background-size: 200% auto;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: shimmer 4s linear infinite;
+        }
+        @keyframes shimmer { to { background-position: 200% center; } }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+
+        /* --- Components --- */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border-radius: 24px;
+            transition: all 0.4s var(--ease-out-expo);
+        }
+        .glass-card:hover {
+            transform: translateY(-5px);
+            background: #ffffff;
+            box-shadow: 0 20px 40px rgba(15, 118, 110, 0.15);
+            border-color: rgba(45, 212, 191, 0.6);
+        }
+
+        .dark-glass {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            transition: all 0.4s var(--ease-out-expo);
+        }
+        .dark-glass:hover {
+            background: rgba(30, 41, 59, 0.95);
+            border-color: rgba(45, 212, 191, 0.5);
+            transform: translateY(-5px);
+        }
+
+        /* Navigation Dots */
+        .nav-dots {
+            position: fixed;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .nav-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: rgba(148, 163, 184, 0.4);
+            transition: all 0.4s var(--ease-out-expo);
+            cursor: pointer;
+            position: relative;
+        }
+        .nav-dot.active {
+            height: 28px;
+            background-color: var(--accent);
+            border-radius: 12px;
+        }
+        .nav-dot::before {
+            content: attr(data-label);
+            position: absolute;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(15, 23, 42, 0.9);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .nav-dot:hover::before { opacity: 1; }
+
+        /* Dynamic Backgrounds */
+        .hero-bg {
+            background: radial-gradient(circle at 10% 20%, #115e59 0%, #0f172a 60%, #020617 100%);
+            background-size: 200% 200%;
+            animation: gradientMove 15s ease infinite;
+        }
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: 0;
+            opacity: 0.5;
+        }
+        
+        /* Grid Layout Fixes */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 2rem;
+        }
+        @media (min-width: 1024px) {
+            .bento-grid {
+                grid-template-columns: repeat(3, 1fr);
+                grid-template-rows: repeat(2, auto);
+            }
+            .bento-bottom-row {
+                grid-column: 1 / -1;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem;
+            }
+        }
+
+        /* PDF Generation Loading State */
+        #loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            flex-direction: column;
+        }
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 4px solid #2dd4bf;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 selection:bg-teal-500 selection:text-white" id="content-to-pdf">
+
+    <!-- Loading Overlay for PDF Download -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p>PDF 생성 중입니다... 잠시만 기다려주세요.</p>
+    </div>
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 w-full z-50 px-8 py-6 flex justify-between items-center transition-all duration-500" id="main-header" data-html2canvas-ignore="true">
+        <a href="#home" class="flex items-center gap-3 group cursor-pointer">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-2xl transition-all duration-500 shadow-xl bg-slate-900 text-white group-hover:rotate-12" id="logo-icon">
+                SS
+            </div>
+            <span class="font-extrabold text-3xl tracking-tight transition-colors duration-500 text-slate-900" id="logo-text">상생플러스</span>
+        </a>
+        
+        <!-- PDF Download Button -->
+        <button onclick="downloadPDF()" class="flex items-center gap-2 bg-slate-900/10 hover:bg-slate-900/20 backdrop-blur-md px-5 py-2.5 rounded-full font-bold text-sm transition-all text-slate-700 hover:text-slate-900 border border-slate-900/10">
+            <i class="fas fa-file-pdf"></i>
+            <span>회사소개서 PDF 다운로드</span>
+        </button>
+    </header>
+
+    <!-- Navigation Dots -->
+    <nav class="nav-dots" data-html2canvas-ignore="true">
+        <a class="nav-dot active" data-target="home" data-label="Home"></a>
+        <a class="nav-dot" data-target="values" data-label="5 Core Values"></a>
+        <a class="nav-dot" data-target="pain-points" data-label="Pain Points"></a>
+        <a class="nav-dot" data-target="safe-gray" data-label="Safe Gray Strategy"></a>
+        <a class="nav-dot" data-target="solutions" data-label="5 Core Solutions"></a>
+        <a class="nav-dot" data-target="trust" data-label="Trust & Compliance"></a>
+        <a class="nav-dot" data-target="portfolio" data-label="Business Portfolio"></a>
+        <a class="nav-dot" data-target="delivery" data-label="Sangsaeng Delivery"></a>
+        <a class="nav-dot" data-target="payment" data-label="Sangsaeng Payment"></a>
+        <a class="nav-dot" data-target="vision" data-label="Vision"></a>
+        <a class="nav-dot" data-target="contact" data-label="Contact"></a>
+    </nav>
+
+    <!-- Main Scroller -->
+    <main class="snap-container" id="scroller">
+
+        <!-- 1. Hero Section -->
+        <section id="home" class="hero-bg text-white relative">
+            <div class="blob w-[600px] h-[600px] bg-teal-500/20 top-[-100px] right-[-100px] animate-float"></div>
+            <div class="blob w-[400px] h-[400px] bg-blue-500/20 bottom-[10%] left-[10%] animate-float" style="animation-delay: -2s;"></div>
+
+            <div class="container relative z-10">
+                <div class="max-w-6xl mx-auto">
+                    <div class="reveal flex items-center gap-4 mb-10">
+                        <div class="h-[2px] w-16 bg-teal-400"></div>
+                        <span class="text-teal-400 text-base font-bold tracking-[0.2em] uppercase">Fintech Operation Partner</span>
+                    </div>
+                    
+                    <h1 class="reveal delay-100 text-6xl lg:text-8xl font-extrabold leading-[1.1] mb-10 tracking-tight">
+                        결제 기술이 아닌<br>
+                        <span class="text-shimmer">운영의 리스크</span>를 팝니다.
+                    </h1>
+                    
+                    <p class="reveal delay-200 text-2xl text-slate-200 font-light leading-relaxed max-w-4xl mb-16">
+                        상생플러스는 단순한 PG 총판이 아닙니다.<br>
+                        사장님이 겪는 <strong class="text-white font-bold border-b-2 border-teal-500/50 pb-1">정산 지연, 세무 복잡성, 자금 흐름의 막힘</strong>을<br>
+                        현장 중심의 운영력으로 대신 해결하는 파트너입니다.
+                    </p>
+                    
+                    <div class="reveal delay-300 flex flex-wrap gap-6" data-html2canvas-ignore="true">
+                        <a href="#safe-gray" class="bg-white text-slate-900 px-10 py-5 rounded-full font-bold text-xl hover:bg-slate-100 transition-all shadow-2xl hover:shadow-teal-500/20 flex items-center gap-4 group transform hover:-translate-y-1">
+                            Safe Gray 전략 보기 
+                            <i class="fas fa-arrow-right text-teal-600 transform group-hover:translate-x-1 transition-transform"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Core Values -->
+        <section id="values" class="bg-white relative">
+            <div class="container">
+                <div class="text-center mb-20 reveal">
+                    <span class="text-teal-600 font-extrabold uppercase tracking-widest text-sm block mb-5">Core Philosophy</span>
+                    <h2 class="text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight mb-6">상생플러스가 일하는 방식</h2>
+                    <p class="text-slate-500 text-xl font-medium">기술 너머, 현장의 진심을 담은 5가지 약속</p>
+                </div>
+
+                <div class="bento-grid max-w-7xl mx-auto">
+                    <!-- Value 1 -->
+                    <div class="reveal delay-100 glass-card p-10 border-t-8 border-t-red-500 group h-full">
+                        <div class="flex items-center justify-between mb-6">
+                            <span class="text-5xl font-black text-slate-200 group-hover:text-red-100 transition-colors">01</span>
+                            <div class="w-14 h-14 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-2xl"><i class="fas fa-bolt"></i></div>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4">SPEED <span class="text-base font-normal text-slate-500 ml-2">빠르게 대응한다</span></h3>
+                        <p class="text-slate-600 text-lg leading-relaxed">
+                            결제 문제는 1시간만 멈춰도 매출이 날아갑니다.<br>상생은 가장 먼저 반응하고, 가장 빨리 해결하여 사장님의 불안을 없앱니다.
+                        </p>
+                    </div>
+
+                    <!-- Value 2 -->
+                    <div class="reveal delay-200 glass-card p-10 border-t-8 border-t-blue-500 group h-full">
+                        <div class="flex items-center justify-between mb-6">
+                            <span class="text-5xl font-black text-slate-200 group-hover:text-blue-100 transition-colors">02</span>
+                            <div class="w-14 h-14 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center text-2xl"><i class="fas fa-key"></i></div>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4">SOLUTION <span class="text-base font-normal text-slate-500 ml-2">해답을 제시한다</span></h3>
+                        <p class="text-slate-600 text-lg leading-relaxed">
+                            "규정상 안 됩니다"라는 통보 대신,<br>"이 방식으로 하면 안전하게 됩니다"라고 구체적인 우회로와 해결책을 제시하는 회사입니다.
+                        </p>
+                    </div>
+
+                    <!-- Value 3 -->
+                    <div class="reveal delay-300 glass-card p-10 border-t-8 border-t-green-500 group h-full">
+                        <div class="flex items-center justify-between mb-6">
+                            <span class="text-5xl font-black text-slate-200 group-hover:text-green-100 transition-colors">03</span>
+                            <div class="w-14 h-14 rounded-full bg-green-50 text-green-500 flex items-center justify-center text-2xl"><i class="fas fa-shield-alt"></i></div>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-4">RELIABILITY <span class="text-base font-normal text-slate-500 ml-2">안정성 중심</span></h3>
+                        <p class="text-slate-600 text-lg leading-relaxed">
+                            단말·PG·밴사·가맹점 사이의 복잡한 구조를 안전하게 정리합니다.<br>어떤 상황에서도 끊김 없는 반복 가능한 시스템을 만듭니다.
+                        </p>
+                    </div>
+
+                    <!-- Bottom Row -->
+                    <div class="bento-bottom-row col-span-full grid md:grid-cols-2 gap-8 mt-8 md:mt-0">
+                        <!-- Value 4 -->
+                        <div class="reveal delay-400 glass-card p-10 border-t-8 border-t-purple-500 group h-full">
+                            <div class="flex items-center justify-between mb-6">
+                                <span class="text-5xl font-black text-slate-200 group-hover:text-purple-100 transition-colors">04</span>
+                                <div class="w-14 h-14 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center text-2xl"><i class="fas fa-shoe-prints"></i></div>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-4">FIELD INSIGHT <span class="text-base font-normal text-slate-500 ml-2">현장을 가장 잘 아는</span></h3>
+                            <p class="text-slate-600 text-lg leading-relaxed">
+                                가맹점의 동선, 라이더의 배차, 매장의 피크타임 운영 패턴 등<br>책상 위가 아닌 "현장의 언어"를 이해하고 문제를 해결합니다.
+                            </p>
+                        </div>
+
+                        <!-- Value 5 -->
+                        <div class="reveal delay-500 glass-card p-10 border-t-8 border-t-teal-500 group bg-slate-50 h-full">
+                            <div class="flex items-center justify-between mb-6">
+                                <span class="text-5xl font-black text-slate-200 group-hover:text-teal-100 transition-colors">05</span>
+                                <div class="w-14 h-14 rounded-full bg-teal-50 text-teal-500 flex items-center justify-center text-2xl"><i class="fas fa-network-wired"></i></div>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-4">CONNECTIVITY <span class="text-base font-normal text-slate-500 ml-2">결제에서 운영까지</span></h3>
+                            <p class="text-slate-600 text-lg leading-relaxed">
+                                결제 → 정산 → 매출분석 → 운영 컨설팅 → 마케팅까지.<br>단절된 서비스들을 하나의 흐름으로 연결하는 것이 상생의 가치입니다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Pain Points -->
+        <section id="pain-points" class="bg-slate-50">
+            <div class="container">
+                <div class="grid lg:grid-cols-2 gap-24 items-end">
+                    <div class="reveal">
+                        <div class="inline-block px-5 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-bold mb-8">Reality Check</div>
+                        <h2 class="text-5xl lg:text-7xl font-extrabold mb-10 leading-tight">
+                            사장님을 괴롭히는 건<br>
+                            결제가 아니라 <span class="relative inline-block text-red-600">불확실성<svg class="absolute w-full h-4 bottom-1 left-0 text-red-200 -z-10" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 5 Q 50 10 100 5" stroke="currentColor" stroke-width="8" fill="none"/></svg></span>입니다.
+                        </h2>
+                        <p class="text-slate-600 text-xl leading-relaxed mb-12 font-medium">
+                            대기업 PG사는 규정만 이야기하고, 일반 총판은 해결 능력이 없습니다.
+                            그 사이에서 사장님은 '회색지대'의 불안함을 안고 사업을 운영합니다.
+                        </p>
+                        
+                        <div class="space-y-6">
+                            <div class="bg-white p-6 rounded-2xl flex items-center gap-6 border-l-8 border-red-400 shadow-md">
+                                <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-500 flex-shrink-0 text-xl"><i class="fas fa-exclamation"></i></div>
+                                <span class="text-slate-800 font-bold text-lg">오늘 매출이 내일 안 들어오면 멈추는 자금줄</span>
+                            </div>
+                            <div class="bg-white p-6 rounded-2xl flex items-center gap-6 border-l-8 border-orange-400 shadow-md">
+                                <div class="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-orange-500 flex-shrink-0 text-xl"><i class="fas fa-random"></i></div>
+                                <span class="text-slate-800 font-bold text-lg">배달·포장·홀 등 뒤섞인 복잡한 매출 구조</span>
+                            </div>
+                            <div class="bg-white p-6 rounded-2xl flex items-center gap-6 border-l-8 border-yellow-400 shadow-md">
+                                <div class="w-12 h-12 rounded-full bg-yellow-50 flex items-center justify-center text-yellow-500 flex-shrink-0 text-xl"><i class="fas fa-file-invoice-dollar"></i></div>
+                                <span class="text-slate-800 font-bold text-lg">세금 폭탄과 불명확한 정산 내역의 공포</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Fixed Height Cards (Updated Alignment: Removed mt-12) -->
+                    <div class="grid grid-cols-2 gap-6 reveal delay-200">
+                        <div class="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-100 hover:-translate-y-2 transition-transform duration-300 flex flex-col justify-between h-full min-h-[320px]">
+                            <div>
+                                <div class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center text-red-500 text-3xl mb-6"><i class="fas fa-money-bill-wave"></i></div>
+                                <h4 class="font-bold text-2xl mb-3 text-slate-900">Cash Flow</h4>
+                            </div>
+                            <p class="text-lg text-slate-500 leading-snug font-medium">"정산이 하루만 늦어도 식자재 결제가 막힙니다."</p>
+                        </div>
+                        <!-- Removed mt-12 here -->
+                        <div class="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-100 hover:-translate-y-2 transition-transform duration-300 flex flex-col justify-between h-full min-h-[320px]">
+                            <div>
+                                <div class="w-16 h-16 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-500 text-3xl mb-6"><i class="fas fa-file-invoice"></i></div>
+                                <h4 class="font-bold text-2xl mb-3 text-slate-900">Tax Risk</h4>
+                            </div>
+                            <p class="text-lg text-slate-500 leading-snug font-medium">"매출은 늘었는데 세금 때문에 남는 게 없어요."</p>
+                        </div>
+                        <div class="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-100 hover:-translate-y-2 transition-transform duration-300 flex flex-col justify-between h-full min-h-[320px]">
+                            <div>
+                                <div class="w-16 h-16 bg-yellow-50 rounded-2xl flex items-center justify-center text-yellow-500 text-3xl mb-6"><i class="fas fa-exclamation-triangle"></i></div>
+                                <h4 class="font-bold text-2xl mb-3 text-slate-900">Gray Zone</h4>
+                            </div>
+                            <p class="text-lg text-slate-500 leading-snug font-medium">"남들처럼 매출 분산은 하고 싶은데 걸릴까 봐 무섭습니다."</p>
+                        </div>
+                        <!-- Removed mt-12 here -->
+                        <div class="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-100 hover:-translate-y-2 transition-transform duration-300 flex flex-col justify-between h-full min-h-[320px]">
+                            <div>
+                                <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-500 text-3xl mb-6"><i class="fas fa-headset"></i></div>
+                                <h4 class="font-bold text-2xl mb-3 text-slate-900">No Support</h4>
+                            </div>
+                            <p class="text-lg text-slate-500 leading-snug font-medium">"PG사는 전화도 안 받고, 총판은 모른다고만 합니다."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Safe Gray Strategy -->
+        <section id="safe-gray" class="bg-slate-900 text-white relative">
+            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
+            <div class="blob w-[800px] h-[800px] bg-teal-600/10 rounded-full blur-[120px] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-float"></div>
+
+            <div class="container relative z-10">
+                <div class="text-center mb-24 reveal">
+                    <span class="text-teal-400 font-bold uppercase tracking-widest text-sm mb-8 inline-block px-4 py-1.5 border border-teal-500/30 rounded-full bg-teal-500/10">Core Strategy</span>
+                    <h2 class="text-5xl lg:text-7xl font-extrabold mb-10">
+                        Dangerous Gray <span class="text-slate-500 mx-4 text-4xl align-middle"><i class="fas fa-arrow-right"></i></span> <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-white to-teal-300 text-shimmer">Safe Gray</span>
+                    </h2>
+                    <p class="text-slate-300 text-xl lg:text-2xl max-w-4xl mx-auto leading-relaxed font-light">
+                        현실적으로 존재하는 '회색 운영(매출 분산, 빠른 정산)'을 무조건 막는 것이 능사가 아닙니다.<br>
+                        상생플러스는 이를 <strong>제도권 기준에 맞춰 가장 안전한 구조로 재설계(Re-engineering)</strong>합니다.
+                    </p>
+                </div>
+
+                <div class="grid lg:grid-cols-3 gap-10 max-w-7xl mx-auto">
+                    <!-- Step 1 -->
+                    <div class="dark-glass p-10 md:p-12 rounded-[2.5rem] text-left relative overflow-hidden group reveal delay-100 h-full">
+                        <div class="absolute top-0 right-0 p-8 opacity-10 text-8xl font-black text-white italic group-hover:text-teal-500 transition-colors">01</div>
+                        <div class="w-16 h-16 bg-teal-500/20 rounded-2xl flex items-center justify-center text-teal-400 text-3xl mb-10 group-hover:scale-110 transition-transform"><i class="fas fa-shield-alt"></i></div>
+                        <h3 class="text-3xl font-bold mb-6 text-white">Risk Removal</h3>
+                        <p class="text-slate-400 text-lg leading-relaxed mb-8">위험한 수기 결제, 불법적 매출 누락 구조를 제거하고 합법적 테두리 안으로 유도합니다.</p>
+                        <span class="text-sm font-bold text-teal-400 bg-teal-400/10 px-4 py-1.5 rounded-full">#리스크제거</span>
+                    </div>
+                    
+                    <!-- Step 2 -->
+                    <div class="dark-glass p-10 md:p-12 rounded-[2.5rem] text-left relative overflow-hidden group reveal delay-200 h-full">
+                        <div class="absolute top-0 right-0 p-8 opacity-10 text-8xl font-black text-white italic group-hover:text-teal-500 transition-colors">02</div>
+                        <div class="w-16 h-16 bg-teal-500/20 rounded-2xl flex items-center justify-center text-teal-400 text-3xl mb-10 group-hover:scale-110 transition-transform"><i class="fas fa-balance-scale"></i></div>
+                        <h3 class="text-3xl font-bold mb-6 text-white">Legal Structure</h3>
+                        <p class="text-slate-400 text-lg leading-relaxed mb-8">여신전문금융업법, 세법을 준수하는 정산 프로세스와 증빙 체계를 구축해드립니다.</p>
+                        <span class="text-sm font-bold text-teal-400 bg-teal-400/10 px-4 py-1.5 rounded-full">#합법적구조</span>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="dark-glass p-10 md:p-12 rounded-[2.5rem] text-left relative overflow-hidden group reveal delay-300 h-full">
+                        <div class="absolute top-0 right-0 p-8 opacity-10 text-8xl font-black text-white italic group-hover:text-teal-500 transition-colors">03</div>
+                        <div class="w-16 h-16 bg-teal-500/20 rounded-2xl flex items-center justify-center text-teal-400 text-3xl mb-10 group-hover:scale-110 transition-transform"><i class="fas fa-cogs"></i></div>
+                        <h3 class="text-3xl font-bold mb-6 text-white">Systematic Ops</h3>
+                        <p class="text-slate-400 text-lg leading-relaxed mb-8">주먹구구식 운영이 아닌, 시스템과 데이터에 기반한 안정적인 자금 흐름을 만듭니다.</p>
+                        <span class="text-sm font-bold text-teal-400 bg-teal-400/10 px-4 py-1.5 rounded-full">#시스템화</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. Solutions -->
+        <section id="solutions" class="bg-white">
+            <div class="container">
+                <div class="flex flex-col lg:flex-row justify-between items-end mb-20 reveal">
+                    <div>
+                        <h2 class="text-5xl lg:text-6xl font-extrabold mb-6 text-slate-900">5대 핵심 솔루션</h2>
+                        <p class="text-slate-500 text-2xl font-medium">결제 데이터와 운영 노하우가 결합된 올인원 패키지</p>
+                    </div>
+                    <div class="hidden lg:block w-48 h-2 bg-slate-100 rounded-full mt-6 lg:mt-0">
+                        <div class="w-24 h-full bg-teal-500 rounded-full"></div>
+                    </div>
+                </div>
+
+                <div class="grid lg:grid-cols-3 gap-8">
+                    <!-- Cards -->
+                    <div class="reveal delay-100 glass-card p-10 group hover:bg-slate-50">
+                        <div class="flex justify-between items-start mb-8">
+                            <div class="p-4 bg-teal-50 rounded-2xl text-teal-600 text-3xl group-hover:bg-teal-500 group-hover:text-white transition-colors"><i class="fas fa-wallet"></i></div>
+                            <span class="text-slate-200 font-black text-4xl">01</span>
+                        </div>
+                        <h3 class="text-3xl font-bold mb-5 text-slate-900 leading-tight">정산·자금흐름 최적화</h3>
+                        <p class="text-slate-600 text-lg leading-relaxed font-medium">즉시(D+0), 익일(D+1) 정산 구조 설계로 흑자 부도 방지</p>
+                    </div>
+                    
+                    <div class="reveal delay-200 glass-card p-10 group hover:bg-slate-50">
+                        <div class="flex justify-between items-start mb-8">
+                            <div class="p-4 bg-teal-50 rounded-2xl text-teal-600 text-3xl group-hover:bg-teal-500 group-hover:text-white transition-colors"><i class="fas fa-search-dollar"></i></div>
+                            <span class="text-slate-200 font-black text-4xl">02</span>
+                        </div>
+                        <h3 class="text-3xl font-bold mb-5 text-slate-900 leading-tight">리스크 관리 (Risk Mgt)</h3>
+                        <p class="text-slate-600 text-lg leading-relaxed font-medium">매출 구조 및 세금 위험 분석, 단말기 리스크 사전 진단</p>
+                    </div>
+
+                    <div class="reveal delay-300 glass-card p-10 group hover:bg-slate-50">
+                        <div class="flex justify-between items-start mb-8">
+                            <div class="p-4 bg-teal-50 rounded-2xl text-teal-600 text-3xl group-hover:bg-teal-500 group-hover:text-white transition-colors"><i class="fas fa-network-wired"></i></div>
+                            <span class="text-slate-200 font-black text-4xl">03</span>
+                        </div>
+                        <h3 class="text-3xl font-bold mb-5 text-slate-900 leading-tight">IT·전산 구축 및 연동</h3>
+                        <p class="text-slate-600 text-lg leading-relaxed font-medium">매장 전산(POS/ERP)과 PG API 직접 연동 및 매출 분리 시스템 구축</p>
+                    </div>
+
+                    <div class="reveal delay-400 glass-card p-10 group hover:bg-slate-50">
+                        <div class="flex justify-between items-start mb-8">
+                            <div class="p-4 bg-teal-50 rounded-2xl text-teal-600 text-3xl group-hover:bg-teal-500 group-hover:text-white transition-colors"><i class="fas fa-store"></i></div>
+                            <span class="text-slate-200 font-black text-4xl">04</span>
+                        </div>
+                        <h3 class="text-3xl font-bold mb-5 text-slate-900 leading-tight">업종별 특화 컨설팅</h3>
+                        <p class="text-slate-600 text-lg leading-relaxed font-medium">배달·요식업 등 복잡한 정산 주기에 특화된 수수료 절감 컨설팅</p>
+                    </div>
+
+                    <div class="reveal delay-500 glass-card p-10 lg:col-span-2 bg-gradient-to-br from-white to-teal-50/50 group border border-teal-100">
+                        <div class="flex justify-between items-start mb-8">
+                            <div class="p-4 bg-teal-100 text-teal-700 rounded-2xl text-3xl group-hover:scale-110 transition-transform"><i class="fas fa-chart-line"></i></div>
+                            <span class="text-teal-200 font-black text-4xl">05</span>
+                        </div>
+                        <h3 class="text-3xl font-bold mb-5 text-slate-900 leading-tight">데이터 기반 숏폼 마케팅</h3>
+                        <p class="text-slate-600 text-lg leading-relaxed font-medium">결제 데이터 분석으로 '골든 타임'과 '킬러 메뉴' 파악 후 타겟형 숏폼 콘텐츠 제작</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. Trust & Compliance -->
+        <section id="trust" class="bg-slate-50">
+            <div class="container">
+                <div class="grid lg:grid-cols-2 gap-20 items-end">
+                    <div class="reveal">
+                        <h2 class="text-5xl lg:text-6xl font-extrabold mb-10 leading-tight text-slate-900">
+                            엄격한 기준이<br>
+                            가장 <span class="text-teal-600">안전한 방패</span>입니다.
+                        </h2>
+                        <p class="text-slate-700 mb-12 text-xl font-medium leading-relaxed">
+                            상생플러스는 금융 당국의 규제와 가이드라인을 준수합니다.<br>
+                            자체적인 리스크 관리 시스템(Risk Guide)을 통해 가맹점과 파트너를 보호합니다.
+                        </p>
+                        <div class="space-y-6">
+                            <div class="bg-white p-6 rounded-2xl flex gap-6 items-center shadow-sm border border-slate-100">
+                                <div class="w-14 h-14 bg-teal-50 rounded-full flex items-center justify-center text-teal-600 shrink-0 text-2xl"><i class="fas fa-shield-alt"></i></div>
+                                <div><h4 class="font-bold text-slate-900 text-xl">AML / KYC / FDS 운영</h4><p class="text-base text-slate-600 mt-1 font-medium">자금세탁방지, 이상거래탐지 시스템 가동</p></div>
+                            </div>
+                            <div class="bg-white p-6 rounded-2xl flex gap-6 items-center shadow-sm border border-slate-100">
+                                <div class="w-14 h-14 bg-teal-50 rounded-full flex items-center justify-center text-teal-600 shrink-0 text-2xl"><i class="fas fa-file-contract"></i></div>
+                                <div><h4 class="font-bold text-slate-900 text-xl">실거래 증빙 기반 정산</h4><p class="text-base text-slate-600 mt-1 font-medium">세금계산서 등 적격 증빙 필수 확인</p></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="reveal delay-200">
+                        <div class="bg-white p-12 rounded-[3rem] shadow-2xl relative z-10 border border-slate-100">
+                            <div class="flex justify-between items-center mb-10 border-b-2 pb-8 border-slate-100">
+                                <h3 class="text-3xl font-extrabold text-slate-900">Compliance Check</h3>
+                                <div class="px-4 py-1.5 bg-green-100 text-green-700 text-sm font-bold rounded-full">VERIFIED</div>
+                            </div>
+                            <ul class="space-y-6 text-lg font-bold text-slate-700">
+                                <li class="flex justify-between"><span class="flex items-center gap-4"><i class="fas fa-check-circle text-teal-500 text-xl"></i> 여신전문금융업법 준수</span></li>
+                                <li class="flex justify-between"><span class="flex items-center gap-4"><i class="fas fa-check-circle text-teal-500 text-xl"></i> 전자금융거래법 준수</span></li>
+                                <li class="flex justify-between"><span class="flex items-center gap-4"><i class="fas fa-check-circle text-teal-500 text-xl"></i> 개인정보보호법 (암호화)</span></li>
+                                <li class="flex justify-between"><span class="flex items-center gap-4"><i class="fas fa-check-circle text-teal-500 text-xl"></i> PG사 직접 지급 (자금 미보관)</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. Portfolio -->
+        <section id="portfolio" class="bg-[#0B1120] text-white">
+            <div class="container">
+                <div class="text-center mb-20 reveal">
+                    <h2 class="text-5xl lg:text-6xl font-extrabold mb-6">4대 비즈니스 포트폴리오</h2>
+                    <p class="text-slate-300 text-xl font-medium">각 사업은 독립적으로 운영되되, 데이터와 노하우로 연결됩니다.</p>
+                </div>
+                <div class="grid lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
+                    <!-- Items -->
+                    <div class="dark-glass p-10 rounded-[2.5rem] hover:border-teal-500 transition-all group reveal delay-100 bg-slate-800/80 border border-slate-700">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-3xl font-bold group-hover:text-teal-400 transition-colors text-white">상생플러스 (Fintech)</h3>
+                            <i class="fas fa-wallet text-3xl text-slate-500 group-hover:text-teal-400 transition-colors"></i>
+                        </div>
+                        <p class="text-slate-300 text-lg mb-8 leading-relaxed font-medium">PG 결제, 선정산, B2B 결제 및 리스크 관리 솔루션 메인 엔진</p>
+                        <div class="flex gap-3"><span class="px-4 py-1.5 bg-slate-900 border border-slate-600 rounded-lg text-sm text-slate-300 font-bold">PG/배달비</span></div>
+                    </div>
+                    <div class="dark-glass p-10 rounded-[2.5rem] hover:border-pink-500 transition-all group reveal delay-200 bg-slate-800/80 border border-slate-700">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-3xl font-bold group-hover:text-pink-400 transition-colors text-white">상생 마케팅</h3>
+                            <i class="fas fa-play-circle text-3xl text-slate-500 group-hover:text-pink-400 transition-colors"></i>
+                        </div>
+                        <p class="text-slate-300 text-lg mb-8 leading-relaxed font-medium">결제 데이터 분석으로 '골든 타임' 도출 및 숏폼 매출 견인</p>
+                        <div class="flex gap-3"><span class="px-4 py-1.5 bg-slate-900 border border-slate-600 rounded-lg text-sm text-slate-300 font-bold">데이터분석</span></div>
+                    </div>
+                    <div class="dark-glass p-10 rounded-[2.5rem] hover:border-blue-500 transition-all group reveal delay-300 bg-slate-800/80 border border-slate-700">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-3xl font-bold group-hover:text-blue-400 transition-colors text-white">Data Lab (소유스캔)</h3>
+                            <i class="fas fa-database text-3xl text-slate-500 group-hover:text-blue-400 transition-colors"></i>
+                        </div>
+                        <p class="text-slate-300 text-lg mb-8 leading-relaxed font-medium">부동산 소유 현황, 생년월일 조회 등 리스크 관리 API 제공</p>
+                        <div class="flex gap-3"><span class="px-4 py-1.5 bg-slate-900 border border-slate-600 rounded-lg text-sm text-slate-300 font-bold">신용정보</span></div>
+                    </div>
+                    <div class="dark-glass p-10 rounded-[2.5rem] hover:border-yellow-500 transition-all group reveal delay-400 bg-slate-800/80 border border-slate-700">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-3xl font-bold group-hover:text-yellow-400 transition-colors text-white">심펫 (Simpet)</h3>
+                            <i class="fas fa-paw text-3xl text-slate-500 group-hover:text-yellow-400 transition-colors"></i>
+                        </div>
+                        <p class="text-slate-300 text-lg mb-8 leading-relaxed font-medium">반려동물 상실(Pet Loss) 치유 및 정서 케어 플랫폼</p>
+                        <div class="flex gap-3"><span class="px-4 py-1.5 bg-slate-900 border border-slate-600 rounded-lg text-sm text-slate-300 font-bold">멘탈케어</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. Sangsaeng Delivery -->
+        <section id="delivery" class="bg-white">
+            <div class="container">
+                <div class="grid lg:grid-cols-2 gap-16 items-end"> <!-- items-end for bottom alignment -->
+                    <div class="reveal">
+                        <span class="text-orange-500 font-bold uppercase tracking-widest text-sm mb-6 block">Delivery Platform</span>
+                        <h2 class="text-5xl lg:text-6xl font-extrabold mb-8 text-slate-900 leading-tight">
+                            진정성 있는 배달비 절약,<br>
+                            <span class="text-orange-500">상생 배달비</span>
+                        </h2>
+                        <p class="text-slate-700 text-2xl leading-relaxed mb-10 font-medium">
+                            배달비 충전, 왜 더 비싸게 하시나요? <br>
+                            복잡한 절차와 수수료 부담을 덜어드리는 것이 상생의 시작입니다.
+                        </p>
+                        
+                        <div class="flex flex-col gap-6">
+                            <div class="flex items-center gap-6 bg-orange-50 p-6 rounded-2xl border border-orange-100">
+                                <div class="w-14 h-14 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-lg shrink-0">Save</div>
+                                <div>
+                                    <h4 class="font-bold text-slate-900 text-xl">가격 대비 <span class="text-orange-600">2.3% 절약</span></h4>
+                                    <p class="text-lg text-slate-700 font-medium mt-1">기존(10%) 대비 합리적인 7.7% 이용료로 실질 비용을 낮췄습니다.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-6 bg-teal-50 p-6 rounded-2xl border border-teal-100">
+                                <div class="w-14 h-14 bg-teal-500 text-white rounded-full flex items-center justify-center font-bold text-lg shrink-0">Speed</div>
+                                <div>
+                                    <h4 class="font-bold text-slate-900 text-xl">365일 <span class="text-teal-600">10분 내 충전</span></h4>
+                                    <p class="text-lg text-slate-700 font-medium mt-1">입금 확인 기다릴 필요 없이, 신용카드 결제 즉시 충전됩니다.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-6 bg-blue-50 p-6 rounded-2xl border border-blue-100">
+                                <div class="w-14 h-14 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-lg shrink-0">Flow</div>
+                                <div>
+                                    <h4 class="font-bold text-slate-900 text-xl">할부 지원으로 유동성 확보</h4>
+                                    <p class="text-lg text-slate-700 font-medium mt-1">배달비를 카드로 할부 결제하여 당장의 현금 부담을 덜어드립니다.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="reveal delay-200 h-full">
+                        <div class="relative bg-slate-50 rounded-[3rem] p-10 border border-slate-100 shadow-xl overflow-hidden h-full flex flex-col justify-between">
+                            <div class="absolute top-0 right-0 w-80 h-80 bg-orange-200/20 rounded-full blur-[100px] -mr-20 -mt-20"></div>
+                            
+                            <div class="text-center mb-10">
+                                <h3 class="text-3xl font-bold text-slate-900">믿을 수 있는 안정성</h3>
+                                <p class="text-lg text-slate-600 mt-2 font-medium">편리함 뒤에는 단단한 기술이 있습니다.</p>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-6 h-full">
+                                <div class="bg-white p-8 rounded-[2rem] border border-slate-200 hover:border-orange-300 transition-colors group flex flex-col items-center text-center h-full justify-center min-h-[250px]">
+                                    <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 mb-6 group-hover:bg-orange-100 group-hover:text-orange-500 transition-colors"><i class="fas fa-hand-pointer text-3xl"></i></div>
+                                    <div class="text-xl font-bold text-slate-900 mb-3">손쉬운 카드 등록</div>
+                                    <p class="text-base text-slate-600 leading-relaxed font-medium">최초 1회 등록으로 매번 번거로운 입력 없이 간편하게 결제하세요.</p>
+                                </div>
+                                <div class="bg-white p-8 rounded-[2rem] border border-slate-200 hover:border-teal-300 transition-colors group flex flex-col items-center text-center h-full justify-center min-h-[250px]">
+                                    <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 mb-6 group-hover:bg-teal-100 group-hover:text-teal-500 transition-colors"><i class="fas fa-server text-3xl"></i></div>
+                                    <div class="text-xl font-bold text-slate-900 mb-3">무사고 안정성</div>
+                                    <p class="text-base text-slate-600 leading-relaxed font-medium">출시 이후 단 한 번의 장애도 없는 독보적인 시스템 안정성을 자랑합니다.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 9. Sangsaeng Payment Service -->
+        <section id="payment" class="bg-slate-900 text-white relative">
+            <div class="absolute inset-0 bg-gradient-to-b from-slate-900 to-slate-800"></div>
+            <div class="container relative z-10">
+                <div class="text-center mb-20 reveal">
+                    <span class="text-blue-400 font-bold uppercase tracking-widest text-sm mb-6 block">Total Payment Solution</span>
+                    <h2 class="text-5xl lg:text-6xl font-extrabold mb-6">상생결제서비스</h2>
+                    <p class="text-slate-300 text-xl font-medium">비즈니스에 필요한 모든 결제 방식을 하나로 통합했습니다.</p>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-7xl mx-auto">
+                    <!-- Items -->
+                    <div class="dark-glass p-8 rounded-3xl hover:bg-slate-800/80 transition-colors reveal delay-100 border border-slate-700">
+                        <div class="w-12 h-12 bg-blue-500/20 text-blue-400 rounded-xl flex items-center justify-center text-2xl mb-5"><i class="fas fa-globe"></i></div>
+                        <h4 class="font-bold text-2xl mb-3 text-white">온라인 결제</h4>
+                        <p class="text-slate-300 text-base leading-relaxed font-medium">PC/모바일 환경 표준 웹 결제</p>
+                    </div>
+                    <div class="dark-glass p-8 rounded-3xl hover:bg-slate-800/80 transition-colors reveal delay-200 border border-slate-700">
+                        <div class="w-12 h-12 bg-purple-500/20 text-purple-400 rounded-xl flex items-center justify-center text-2xl mb-5"><i class="fas fa-keyboard"></i></div>
+                        <h4 class="font-bold text-2xl mb-3 text-white">수기 결제 (Key-in)</h4>
+                        <p class="text-slate-300 text-base leading-relaxed font-medium">카드 번호 입력만으로 간편 승인</p>
+                    </div>
+                    <div class="dark-glass p-8 rounded-3xl hover:bg-slate-800/80 transition-colors reveal delay-300 border border-slate-700">
+                        <div class="w-12 h-12 bg-green-500/20 text-green-400 rounded-xl flex items-center justify-center text-2xl mb-5"><i class="fas fa-link"></i></div>
+                        <h4 class="font-bold text-2xl mb-3 text-white">SMS/URL 결제</h4>
+                        <p class="text-slate-300 text-base leading-relaxed font-medium">링크 발송으로 원거리 즉시 수납</p>
+                    </div>
+                    <div class="dark-glass p-8 rounded-3xl hover:bg-slate-800/80 transition-colors reveal delay-400 border border-slate-700">
+                        <div class="w-12 h-12 bg-yellow-500/20 text-yellow-400 rounded-xl flex items-center justify-center text-2xl mb-5"><i class="fas fa-university"></i></div>
+                        <h4 class="font-bold text-2xl mb-3 text-white">가상계좌 서비스</h4>
+                        <p class="text-slate-300 text-base leading-relaxed font-medium">입금 확인 자동화 및 미수금 관리</p>
+                    </div>
+                    <div class="dark-glass p-8 rounded-3xl hover:bg-slate-800/80 transition-colors reveal delay-500 border border-teal-500/30 md:col-span-2 bg-slate-800/50">
+                        <div class="flex items-center gap-5 mb-5">
+                            <div class="w-12 h-12 bg-teal-500/20 text-teal-400 rounded-xl flex items-center justify-center text-2xl"><i class="fas fa-bolt"></i></div>
+                            <h4 class="font-bold text-2xl text-teal-400">선정산 서비스 (Fast Settlement)</h4>
+                        </div>
+                        <p class="text-white text-xl leading-relaxed mb-3 font-bold">"기존 3~7일 소요되던 정산을 즉시 입금으로"</p>
+                        <p class="text-slate-300 text-base leading-relaxed font-medium">매출 발생 다음날(D+1) 또는 당일(D+0) 입금으로 자금 회전 숨통을 틔워드립니다. 업계 최저 수수료로 부담을 줄였습니다.</p>
+                    </div>
+                    <div class="dark-glass p-8 rounded-3xl hover:bg-slate-800/80 transition-colors reveal delay-600 border border-slate-700">
+                        <div class="w-12 h-12 bg-red-500/20 text-red-400 rounded-xl flex items-center justify-center text-2xl mb-5"><i class="fas fa-credit-card"></i></div>
+                        <h4 class="font-bold text-2xl mb-3 text-white">오프라인 결제</h4>
+                        <p class="text-slate-300 text-base leading-relaxed font-medium">CAT, POS, 키오스크 하드웨어 지원</p>
+                    </div>
+                    <div class="dark-glass p-8 rounded-3xl hover:bg-slate-800/80 transition-colors reveal delay-600 border border-slate-700">
+                        <div class="w-12 h-12 bg-indigo-500/20 text-indigo-400 rounded-xl flex items-center justify-center text-2xl mb-5"><i class="fas fa-ticket-alt"></i></div>
+                        <h4 class="font-bold text-2xl mb-3 text-white">선불 전자지급</h4>
+                        <p class="text-slate-300 text-base leading-relaxed font-medium">포인트, 상품권 등 선불 수단 통합</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 10. Vision -->
+        <section id="vision" class="bg-white">
+            <div class="container text-center max-w-5xl">
+                <div class="reveal">
+                    <span class="text-teal-600 font-bold uppercase tracking-widest text-sm mb-8 block">Our Future</span>
+                    <h2 class="text-5xl lg:text-7xl font-extrabold mb-12 leading-tight text-slate-900">
+                        "상생플러스는 사장님이 몰라도 되는<br>
+                        <span class="text-shimmer font-black">모든 금융 리스크</span>를 대신 해결합니다."
+                    </h2>
+                    <p class="text-2xl text-slate-500 mb-16 font-light">
+                        가맹점이 믿고 맡기는 No.1 현장 중심 결제 운영 브랜드.<br>
+                        기술이 아니라 '운영력'으로 증명하겠습니다.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 11. Contact & Footer -->
+        <section id="contact" class="bg-slate-50">
+            <div class="container">
+                <div class="bg-slate-900 rounded-[3rem] p-12 md:p-24 text-center relative overflow-hidden reveal shadow-2xl">
+                    <!-- Background Effects -->
+                    <div class="absolute top-0 left-0 w-full h-full opacity-30 pointer-events-none">
+                        <div class="absolute top-[-50%] left-[-20%] w-[80%] h-[150%] bg-teal-600 rounded-full blur-[150px] animate-pulse"></div>
+                        <div class="absolute bottom-[-50%] right-[-20%] w-[80%] h-[150%] bg-blue-600 rounded-full blur-[150px] animate-pulse" style="animation-delay: 2s;"></div>
+                    </div>
+
+                    <div class="relative z-10">
+                        <h2 class="text-4xl md:text-6xl font-bold text-white mb-16">
+                            복잡한 문제는<br>저희에게 던져두세요.
+                        </h2>
+                        
+                        <!-- Company Info -->
+                        <div class="inline-block text-left md:text-center bg-white/5 backdrop-blur-sm rounded-3xl p-10 border border-white/10 shadow-lg">
+                            <div class="grid gap-5 text-slate-300 text-lg font-light leading-relaxed">
+                                <p class="flex flex-col md:flex-row md:justify-center md:gap-8">
+                                    <span><strong class="text-white font-medium">대표</strong> : 공도현</span>
+                                    <span class="hidden md:inline text-slate-600">|</span>
+                                    <span><strong class="text-white font-medium">메일문의</strong> : sspluskorea@naver.com</span>
+                                </p>
+                                <p>
+                                    <strong class="text-white font-medium">주소</strong> : 대구 동구 장등로 56, 벽산E-솔렌스힐 상가 121호
+                                </p>
+                                <p class="flex flex-col md:flex-row md:justify-center md:gap-8">
+                                    <span><strong class="text-white font-medium">사업자등록번호</strong> : 714-88-02750</span>
+                                    <span class="hidden md:inline text-slate-600">|</span>
+                                    <span><strong class="text-white font-medium">법인등록번호</strong> : 170111-0900391</span>
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-16 text-slate-500 text-sm">
+                            &copy; 2025 Sangsaeng Plus. All rights reserved.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // PDF Download Function using html2pdf.js
+        function downloadPDF() {
+            // Show loading overlay
+            const loader = document.getElementById('loading-overlay');
+            loader.style.display = 'flex';
+
+            // Select the element to convert (the entire body)
+            const element = document.body;
+
+            // Options for pdf generation
+            const opt = {
+                margin:       [0, 0, 0, 0], // Top, Left, Bottom, Right
+                filename:     '상생플러스_회사소개서.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, // Higher scale for better quality
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Generate PDF
+            html2pdf().set(opt).from(element).save().then(() => {
+                // Hide loading overlay after download starts
+                loader.style.display = 'none';
+            }).catch(err => {
+                console.error("PDF generation error:", err);
+                loader.style.display = 'none';
+                alert("PDF 생성 중 오류가 발생했습니다.");
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const scroller = document.getElementById('scroller');
+            const sections = document.querySelectorAll('section');
+            const navDots = document.querySelectorAll('.nav-dot');
+            const logoText = document.getElementById('logo-text');
+            const logoIcon = document.getElementById('logo-icon');
+
+            const observerOptions = {
+                root: scroller,
+                threshold: 0.25,
+                rootMargin: "-10% 0px -10% 0px"
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        const id = entry.target.getAttribute('id');
+                        
+                        navDots.forEach(dot => {
+                            dot.classList.toggle('active', dot.dataset.target === id);
+                        });
+
+                        // Header Logic
+                        const isDarkBg = ['home', 'safe-gray', 'portfolio', 'payment'].includes(id);
+                        if (isDarkBg) {
+                            logoText.classList.replace('text-slate-900', 'text-white');
+                            logoIcon.classList.replace('bg-slate-900', 'bg-white');
+                            logoIcon.classList.replace('text-white', 'text-slate-900');
+                        } else {
+                            logoText.classList.replace('text-white', 'text-slate-900');
+                            logoIcon.classList.replace('bg-white', 'bg-slate-900');
+                            logoIcon.classList.replace('text-slate-900', 'text-white');
+                        }
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => observer.observe(section));
+            
+            navDots.forEach(dot => {
+                dot.addEventListener('click', () => {
+                    const targetId = dot.dataset.target;
+                    document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
