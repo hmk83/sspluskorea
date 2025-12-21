@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>소유스캔(SOYOU SCAN) - B2B 부동산 자산 데이터 솔루션</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- html2pdf.js for PDF Download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #0064FF;
+            --primary-dark: #1B64DA;
+            --accent: #3182F6;
+            --bg-light: #F2F4F6;
+            --text-main: #191F28;
+            --text-sub: #4E5968;
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text-main);
+            word-break: keep-all;
+            background-color: #ffffff;
+            overflow-x: hidden;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        
+        /* --- Scroll Snap Container --- */
+        .snap-container {
+            height: 100vh;
+            width: 100vw;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+        }
+        .snap-container::-webkit-scrollbar { display: none; }
+
+        section {
+            min-height: 100vh;
+            width: 100vw;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 120px 2rem 4rem 2rem; 
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- Animations --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s var(--ease-out-expo), transform 0.6s var(--ease-out-expo);
+            will-change: opacity, transform;
+        }
+        
+        section.active .reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .delay-100 { transition-delay: 0.1s; }
+        .delay-200 { transition-delay: 0.2s; }
+        .delay-300 { transition-delay: 0.3s; }
+
+        .glass-card {
+            background: #ffffff;
+            border: 1px solid #f2f4f6;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+            border-radius: 24px;
+            transition: all 0.4s var(--ease-out-expo);
+            height: 100%;
+        }
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 16px 32px rgba(0, 100, 255, 0.08);
+            border-color: rgba(0, 100, 255, 0.1);
+        }
+
+        /* Navigation Dots */
+        .nav-dots {
+            position: fixed;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+        .nav-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.1);
+            transition: all 0.4s var(--ease-out-expo);
+            cursor: pointer;
+            position: relative;
+        }
+        .nav-dot.active {
+            height: 24px;
+            background-color: var(--primary);
+            border-radius: 8px;
+        }
+        .nav-dot::before {
+            content: attr(data-label);
+            position: absolute;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #191f28;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 500;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .nav-dot:hover::before { opacity: 1; }
+
+        .hero-bg {
+            background: #ffffff;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: 0;
+            opacity: 0.3;
+        }
+
+        /* Header Styling */
+        #main-header {
+            background-color: transparent;
+            backdrop-filter: blur(0px);
+            border-bottom: 1px solid transparent;
+        }
+        #main-header.scrolled {
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+
+        #loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.9);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            color: var(--primary);
+            flex-direction: column;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid var(--primary);
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="selection:bg-blue-100 selection:text-blue-700" id="content-to-pdf">
+
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p class="font-bold text-sm">PDF 제안서를 생성 중입니다...</p>
+    </div>
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 w-full z-50 px-10 py-8 flex justify-between items-center transition-all duration-300" id="main-header" data-html2canvas-ignore="true">
+        <div class="flex items-center gap-8">
+            <a href="#home" class="flex items-center gap-2 group cursor-pointer">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xl transition-all duration-500 bg-blue-600 text-white shadow-lg group-hover:scale-110" id="logo-icon">
+                    S
+                </div>
+                <span class="font-bold text-2xl tracking-tight transition-colors duration-500 text-slate-900" id="logo-text">소유스캔</span>
+            </a>
+            <a href="http://soyouscan.com" target="_blank" class="hidden md:block text-slate-400 hover:text-blue-600 text-sm font-semibold transition-colors">
+                soyouscan.com
+            </a>
+        </div>
+        
+        <button onclick="downloadPDF()" class="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 px-6 py-3 rounded-full font-bold text-sm transition-all text-slate-700">
+            <i class="fas fa-file-pdf"></i>
+            <span>제안서 PDF 다운로드</span>
+        </button>
+    </header>
+
+    <!-- Navigation Dots -->
+    <nav class="nav-dots" data-html2canvas-ignore="true">
+        <a class="nav-dot active" data-target="home" data-label="Home"></a>
+        <a class="nav-dot" data-target="overview" data-label="Service Overview"></a>
+        <a class="nav-dot" data-target="market-need" data-label="Market Insight"></a>
+        <a class="nav-dot" data-target="safegray" data-label="Core Strategy"></a>
+        <a class="nav-dot" data-target="solutions" data-label="5 Core Solutions"></a>
+        <a class="nav-dot" data-target="references" data-label="Partners & Use Cases"></a>
+        <a class="nav-dot" data-target="delivery-models" data-label="Delivery Models"></a>
+        <a class="nav-dot" data-target="roi-value" data-label="Expected Value"></a>
+        <a class="nav-dot" data-target="contact" data-label="Contact"></a>
+    </nav>
+
+    <main class="snap-container" id="scroller">
+
+        <!-- 1. Hero Section -->
+        <section id="home" class="hero-bg relative overflow-hidden">
+            <div class="blob w-[800px] h-[800px] bg-blue-100 top-[-200px] right-[-200px] animate-float"></div>
+            <div class="blob w-[600px] h-[600px] bg-sky-50 bottom-[10%] left-[5%] animate-float" style="animation-delay: -2s;"></div>
+
+            <div class="container relative z-10">
+                <div class="max-w-4xl">
+                    <div class="reveal mb-8">
+                        <span class="text-blue-600 text-lg font-bold tracking-tight bg-blue-50 px-4 py-2 rounded-lg">Real-time Asset Intelligence for Enterprise</span>
+                    </div>
+                    
+                    <h1 class="reveal delay-100 text-6xl lg:text-8xl font-black leading-[1.1] mb-10 tracking-tight text-[#191F28]">
+                        정보가 아닌<br>
+                        <span class="text-blue-600">실체</span>를 스캔합니다.
+                    </h1>
+                    
+                    <p class="reveal delay-200 text-2xl text-[#4E5968] font-medium leading-relaxed max-w-3xl mb-12">
+                        생년월일 하나로 전국 부동산 자산과 권리관계를 즉시 분석합니다.<br>
+                        소유스캔은 기업의 리스크 관리부터 업무 자동화까지,<br>
+                        데이터로 증명되는 <strong>압도적 의사결정 인프라</strong>를 제공합니다.
+                    </p>
+                    
+                    <div class="reveal delay-300 flex flex-wrap gap-4" data-html2canvas-ignore="true">
+                        <a href="#overview" class="bg-blue-600 text-white px-10 py-5 rounded-3xl font-bold text-xl hover:bg-blue-700 transition-all shadow-xl flex items-center gap-3">
+                            비즈니스 제안 개요 보기
+                            <i class="fas fa-chevron-right text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Service Overview -->
+        <section id="overview" class="bg-slate-50">
+            <div class="container">
+                <div class="grid lg:grid-cols-2 gap-16 items-center">
+                    <div class="reveal">
+                        <span class="text-blue-600 text-sm font-bold uppercase tracking-widest mb-4 block">1.1 Service Overview</span>
+                        <h2 class="text-4xl lg:text-5xl font-bold text-[#191F28] mb-8 leading-tight">개인 맞춤형<br><span class="text-blue-600">부동산 소유 현황</span> 서비스</h2>
+                        <p class="text-lg text-[#4E5968] leading-relaxed mb-8">
+                            부동산 소유 현황 서비스는 생년월일 기반으로 국내 부동산 및 자산 보유 현황을 조회할 수 있는 혁신적인 플랫폼입니다. 흩어져 있는 등기부등본, 공공 데이터, 금융 정보를 통합 분석하여 개인부터 전문가, 금융기관까지 폭넓게 활용 가능한 최적의 자산 조회 경험을 제공합니다.
+                        </p>
+                        <div class="space-y-4">
+                            <div class="flex items-start gap-4">
+                                <i class="fas fa-check-circle text-blue-600 mt-1"></i>
+                                <p class="text-slate-700">별도 인증 없는 간편한 모바일·웹 접근성</p>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <i class="fas fa-check-circle text-blue-600 mt-1"></i>
+                                <p class="text-slate-700">실소유권 여부, 근저당·담보 설정 등 종합적 판단 지원</p>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <i class="fas fa-check-circle text-blue-600 mt-1"></i>
+                                <p class="text-slate-700">실시간 연동을 통한 데이터의 정확성 및 신뢰성 확보</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="reveal delay-200">
+                        <div class="glass-card p-12 bg-white shadow-2xl relative overflow-hidden">
+                            <h4 class="text-2xl font-bold mb-6 text-blue-600">통합 데이터 분석 가치</h4>
+                            <p class="text-[#4E5968] mb-8">분산된 데이터를 디지털 인프라로 전환하여 비즈니스 의사결정의 품질을 혁신합니다.</p>
+                            <div class="flex flex-col gap-4">
+                                <div class="p-5 bg-blue-50 rounded-2xl border border-blue-100 flex justify-between">
+                                    <span class="font-bold">대법원 등기부 정보</span>
+                                    <span class="text-blue-600"><i class="fas fa-link"></i> Sync</span>
+                                </div>
+                                <div class="p-5 bg-blue-50 rounded-2xl border border-blue-100 flex justify-between">
+                                    <span class="font-bold">범정부 공공 데이터</span>
+                                    <span class="text-blue-600"><i class="fas fa-link"></i> Sync</span>
+                                </div>
+                                <div class="p-5 bg-blue-50 rounded-2xl border border-blue-100 flex justify-between">
+                                    <span class="font-bold">자체 리스크 분석 엔진</span>
+                                    <span class="text-blue-600"><i class="fas fa-microchip"></i> Active</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Market Need & Differentiation (아이콘 박스 추가) -->
+        <section id="market-need" class="bg-white">
+            <div class="container">
+                <div class="text-center mb-16 reveal">
+                    <span class="text-blue-600 text-sm font-bold uppercase tracking-widest mb-4 block">1.2 Market Insight & Differentiation</span>
+                    <h2 class="text-4xl lg:text-5xl font-black mb-8 leading-tight">부동산 조사가 기업의 <span class="text-red-500">리스크 관리</span>의 핵심</h2>
+                </div>
+                <div class="grid lg:grid-cols-2 gap-12">
+                    <!-- Market Need Section -->
+                    <div class="reveal delay-100 p-10 bg-slate-50 rounded-[40px]">
+                        <h4 class="text-2xl font-bold mb-8 text-slate-800 border-l-4 border-blue-600 pl-4">시장 필요성</h4>
+                        <ul class="space-y-6">
+                            <li class="flex gap-4">
+                                <!-- 아이콘에 박스 스타일 추가 (Differential 부분과 통일) -->
+                                <div class="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-blue-600 shrink-0 border border-blue-50"><i class="fas fa-balance-scale"></i></div>
+                                <p class="text-slate-600 font-medium leading-relaxed">채권 회수 및 법률 분쟁 시 상대방 은닉 재산의 신속한 파악 요구 급증</p>
+                            </li>
+                            <li class="flex gap-4">
+                                <div class="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-blue-600 shrink-0 border border-blue-50"><i class="fas fa-shield-alt"></i></div>
+                                <p class="text-slate-600 font-medium leading-relaxed">금융 및 신용 평가 시 정확하고 신뢰할 수 있는 통합 조회 서비스의 부재</p>
+                            </li>
+                            <li class="flex gap-4">
+                                <div class="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center text-blue-600 shrink-0 border border-blue-50"><i class="fas fa-clock"></i></div>
+                                <p class="text-slate-600 font-medium leading-relaxed">기존의 복잡한 수작업 절차를 대체할 실시간 데이터 스트리밍 니즈 확대</p>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- Differentiation Section -->
+                    <div class="reveal delay-200 p-10 bg-[#191F28] rounded-[48px] text-white">
+                        <h4 class="text-2xl font-bold mb-8 text-blue-400 border-l-4 border-blue-400 pl-4">차별화 포인트</h4>
+                        <ul class="space-y-6">
+                            <li class="flex gap-5">
+                                <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center shrink-0"><i class="fas fa-trophy text-yellow-400"></i></div>
+                                <div><h5 class="font-bold">국내 최초 통합 플랫폼</h5><p class="text-sm text-slate-400 leading-relaxed">생년월일 기반의 독보적 자산 식별 조회 모델 보유</p></div>
+                            </li>
+                            <li class="flex gap-5">
+                                <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center shrink-0"><i class="fas fa-chart-line text-blue-400"></i></div>
+                                <div><h5 class="font-bold">리스크 관리 최적화</h5><p class="text-sm text-slate-400 leading-relaxed">단순 조회를 넘어 채권 및 권리관계 심층 분석 지원</p></div>
+                            </li>
+                            <li class="flex gap-5">
+                                <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center shrink-0"><i class="fas fa-expand-arrows-alt text-teal-400"></i></div>
+                                <div><h5 class="font-bold">유연한 B2B 확장성</h5><p class="text-sm text-slate-400 leading-relaxed">맞춤형 API 및 자체 서비스 구축(White-label) 지원</p></div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Safe Gray Strategy (하단 정렬 최적화) -->
+        <section id="safegray" class="bg-blue-600 text-white">
+            <div class="container h-full flex flex-col justify-end"> 
+                <div class="grid lg:grid-cols-2 gap-20 items-end"> <!-- 박스 하단 정렬 -->
+                    <div class="reveal pb-12">
+                        <span class="text-blue-100 text-sm font-bold uppercase tracking-widest mb-6 block">Safe Gray Operation</span>
+                        <h2 class="text-4xl lg:text-6xl font-black mb-10 leading-tight">위험한 Gray를<br><span class="text-blue-900">Safe Gray</span>로.</h2>
+                        <p class="text-xl text-blue-50 leading-relaxed mb-12">
+                            현실적으로 존재하는 비즈니스상의 회색 지대(Gray Zone)를 무조건 막는 것이 능사가 아닙니다. 
+                            소유스캔은 이를 <strong>제도권 기준에 맞춰 가장 안전한 구조로 재설계(Re-engineering)</strong>하여 법적 안정성을 확보합니다.
+                        </p>
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="p-6 bg-blue-700/50 rounded-3xl border border-blue-400/30">
+                                <span class="text-3xl font-bold text-white block mb-2">90%</span>
+                                <span class="text-sm text-blue-200 font-bold">조사 리드타임 단축</span>
+                            </div>
+                            <div class="p-6 bg-blue-700/50 rounded-3xl border border-blue-400/30">
+                                <span class="text-3xl font-bold text-white block mb-2">70%</span>
+                                <span class="text-sm text-blue-200 font-bold">운영 고정비용 절감</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="reveal delay-200 w-full">
+                        <!-- 흰색 프로세스 박스 하단 정렬 -->
+                        <div class="bg-white p-12 rounded-t-[64px] shadow-2xl">
+                            <h4 class="text-2xl font-bold mb-8 text-blue-600 italic">Safe Data Architecture</h4>
+                            <div class="space-y-8">
+                                <div class="flex items-start gap-6">
+                                    <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center font-black text-blue-600 shrink-0">1</div>
+                                    <div><h5 class="text-xl font-bold text-slate-900 mb-1">리스크 사전 탐지</h5><p class="text-slate-500 text-sm">잠재적인 권리 충돌 및 법적 위험 요소를 선제적으로 스캔</p></div>
+                                </div>
+                                <div class="flex items-start gap-6">
+                                    <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center font-black text-blue-600 shrink-0">2</div>
+                                    <div><h5 class="text-xl font-bold text-slate-900 mb-1">합법적 구조 재편</h5><p class="text-slate-500 text-sm">개인정보보호법 가이드라인 기반의 적법한 조회 구조 재설계</p></div>
+                                </div>
+                                <div class="flex items-start gap-6">
+                                    <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center font-black text-blue-600 shrink-0">3</div>
+                                    <div><h5 class="text-xl font-bold text-slate-900 mb-1">시스템적 안정화</h5><p class="text-slate-500 text-sm">조회 이력 관리 및 비식별화 처리를 통한 보안 안정성 내재화</p></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. 5 Core Solutions (전문 정비) -->
+        <section id="solutions" class="bg-white">
+            <div class="container">
+                <div class="text-center mb-20 reveal">
+                    <span class="text-blue-600 text-sm font-bold uppercase tracking-widest mb-5 block">Professional Solutions</span>
+                    <h2 class="text-5xl font-black mb-6 text-slate-900">소유스캔 5대 핵심 솔루션</h2>
+                    <p class="text-xl text-slate-500 font-medium">데이터의 가치를 비즈니스의 수익으로 전환하는 기술 패키지</p>
+                </div>
+
+                <div class="grid lg:grid-cols-3 gap-8">
+                    <!-- Solution 1 -->
+                    <div class="reveal delay-100 glass-card p-10 group">
+                        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mb-8 group-hover:bg-blue-600 group-hover:text-white transition-all"><i class="fas fa-search-location"></i></div>
+                        <h4 class="text-2xl font-bold mb-4 text-slate-900 leading-tight">01. 자산 통합 스캔</h4>
+                        <p class="text-slate-500 text-lg leading-relaxed">생년월일 입력만으로 전국 단위 부동산 소유 현황을 10초 이내에 통합 조회하고 데이터를 추출합니다.</p>
+                    </div>
+                    <!-- Solution 2 -->
+                    <div class="reveal delay-200 glass-card p-10 group">
+                        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mb-8 group-hover:bg-blue-600 group-hover:text-white transition-all"><i class="fas fa-shield-virus"></i></div>
+                        <h4 class="text-2xl font-bold mb-4 text-slate-900 leading-tight">02. 등기 리스크 스코어링</h4>
+                        <p class="text-slate-500 text-lg leading-relaxed">압류, 가압류, 근저당 등 28가지 변동 리스크를 알고리즘으로 분석하여 계량화된 리스크 지수를 산출합니다.</p>
+                    </div>
+                    <!-- Solution 3 -->
+                    <div class="reveal delay-300 glass-card p-10 group">
+                        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mb-8 group-hover:bg-blue-600 group-hover:text-white transition-all"><i class="fas fa-code"></i></div>
+                        <h4 class="text-2xl font-bold mb-4 text-slate-900 leading-tight">03. B2B 전용 API Hub</h4>
+                        <p class="text-slate-500 text-lg leading-relaxed">기업 내부 시스템(ERP/CRM)에 조회 기능을 즉시 연동하여 업무 프로세스를 자동화하는 인터페이스를 제공합니다.</p>
+                    </div>
+                    <!-- Solution 4 -->
+                    <div class="reveal delay-400 glass-card p-10 group">
+                        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mb-8 group-hover:bg-blue-600 group-hover:text-white transition-all"><i class="fas fa-file-contract"></i></div>
+                        <h4 class="text-2xl font-bold mb-4 text-slate-900 leading-tight">04. AI 법률 리포트 자동화</h4>
+                        <p class="text-slate-500 text-lg leading-relaxed">복잡한 권리관계를 비전문가도 이해할 수 있는 시각적 도표 분석 리포트로 실시간 자동 변환합니다.</p>
+                    </div>
+                    <!-- Solution 5 -->
+                    <div class="reveal delay-500 glass-card p-10 col-span-2 group bg-gradient-to-br from-blue-50 to-white">
+                        <div class="w-16 h-16 bg-blue-100 text-blue-700 rounded-2xl flex items-center justify-center text-3xl mb-8 group-hover:scale-110 transition-transform"><i class="fas fa-cogs"></i></div>
+                        <h4 class="text-2xl font-bold mb-4 text-slate-900 leading-tight">05. 브랜드 커스터마이징 구축</h4>
+                        <p class="text-slate-600 text-lg leading-relaxed">고유 브랜드로 서비스를 제공하고자 하는 기업을 위해 브랜드 화이트라벨링 및 전용 시스템 구축(White-labeling)을 완벽하게 지원합니다.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. Partners & Use Cases (산업별 시뮬레이션 기반 내용 고도화) -->
+        <section id="references" class="bg-slate-50">
+            <div class="container">
+                <div class="text-center mb-16 reveal">
+                    <span class="text-blue-600 text-sm font-bold uppercase tracking-widest mb-4 block">Trust & Industry Value</span>
+                    <h2 class="text-4xl lg:text-5xl font-black mb-8 leading-tight">데이터 인텔리전스가 제안하는<br>산업별 업무 혁신 시나리오</h2>
+                    <p class="text-lg text-slate-500 font-medium">소유스캔 솔루션 도입 시 기대되는 전략적 비즈니스 가치 제안</p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 reveal delay-200 mb-20">
+                    <!-- 금융 카드 -->
+                    <div class="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 group hover:border-blue-500 transition-all">
+                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-6 text-xl group-hover:bg-blue-600 group-hover:text-white"><i class="fas fa-university"></i></div>
+                        <h5 class="text-xl font-bold mb-3">금융 및 캐피탈</h5>
+                        <p class="text-xs text-slate-500 leading-relaxed mb-4">여신 리스크 관리 및 담보 가치 실시간 모니터링</p>
+                        <div class="pt-4 border-t border-slate-50 text-sm text-blue-600 font-bold">
+                            <i class="fas fa-chart-line opacity-20 mr-1"></i> 부실 채권 비율(NPL) 약 15% 감축 기대 (시뮬레이션 기반)
+                        </div>
+                    </div>
+                    <!-- 법무 카드 -->
+                    <div class="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 group hover:border-blue-500 transition-all">
+                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-6 text-xl group-hover:bg-blue-600 group-hover:text-white"><i class="fas fa-gavel"></i></div>
+                        <h5 class="text-xl font-bold mb-3">법무법인</h5>
+                        <p class="text-xs text-slate-500 leading-relaxed mb-4">이혼 재산분할 및 민사 소송 전 상대방 은닉 재산 추적</p>
+                        <div class="pt-4 border-t border-slate-50 text-sm text-blue-600 font-bold">
+                            <i class="fas fa-chart-line opacity-20 mr-1"></i> 가압류 신청 성공률 약 2배 향상 기대 모델
+                        </div>
+                    </div>
+                    <!-- 채권 카드 -->
+                    <div class="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 group hover:border-blue-500 transition-all">
+                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-6 text-xl group-hover:bg-blue-600 group-hover:text-white"><i class="fas fa-search-dollar"></i></div>
+                        <h5 class="text-xl font-bold mb-3">채권추심 전문기관</h5>
+                        <p class="text-xs text-slate-500 leading-relaxed mb-4">채무자 부동산 지분 및 선순위 권리관계 실시간 분석</p>
+                        <div class="pt-4 border-t border-slate-50 text-sm text-blue-600 font-bold">
+                            <i class="fas fa-chart-line opacity-20 mr-1"></i> 회수 타겟 선정 리드타임 최대 90% 단축 기대
+                        </div>
+                    </div>
+                    <!-- 프롭테크 카드 -->
+                    <div class="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 group hover:border-blue-500 transition-all">
+                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-6 text-xl group-hover:bg-blue-600 group-hover:text-white"><i class="fas fa-laptop-house"></i></div>
+                        <h5 class="text-xl font-bold mb-3">프롭테크 및 플랫폼</h5>
+                        <p class="text-xs text-slate-500 leading-relaxed mb-4">매물 신뢰성 확보 및 등기 자동 분석 API 연동 서비스</p>
+                        <div class="pt-4 border-t border-slate-50 text-sm text-blue-600 font-bold">
+                            <i class="fas fa-chart-line opacity-20 mr-1"></i> 허위 매물 리스크 제로화 기반의 거래 신뢰도 제안
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reference Logo Grid (명칭 수정) -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 reveal delay-300 grayscale opacity-40">
+                    <div class="bg-white p-6 rounded-2xl flex items-center justify-center border border-slate-100"><span class="text-sm font-bold">국내 주요 카드사</span></div>
+                    <div class="bg-white p-6 rounded-2xl flex items-center justify-center border border-slate-100"><span class="text-sm font-bold">금융지주/캐피탈</span></div>
+                    <div class="bg-white p-6 rounded-2xl flex items-center justify-center border border-slate-100"><span class="text-sm font-bold">대형 법무법인</span></div>
+                    <div class="bg-white p-6 rounded-2xl flex items-center justify-center border border-slate-100"><span class="text-sm font-bold">전국 탐정사무소 협회</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. Delivery Models (전략 제안서 형태로 개편 - 버튼 제거) -->
+        <section id="delivery-models" class="bg-white">
+            <div class="container">
+                <div class="text-center mb-20 reveal">
+                    <span class="text-blue-600 text-sm font-bold uppercase tracking-widest mb-4 block">1.3 Service Delivery Models</span>
+                    <h2 class="text-4xl lg:text-5xl font-black mb-6 text-slate-900">비즈니스 가용 모델 제안</h2>
+                    <p class="text-xl text-slate-500 font-medium">귀사의 시스템 규모와 비즈니스 목적에 최적화된 도입 형태를 제안합니다.</p>
+                </div>
+                <div class="grid lg:grid-cols-2 gap-12 max-w-5xl mx-auto">
+                    <!-- API Model -->
+                    <div class="reveal delay-100 p-12 border border-blue-100 rounded-[56px] bg-blue-50 flex flex-col relative overflow-hidden shadow-sm">
+                        <div class="absolute top-0 right-0 p-6 bg-blue-600 text-white text-xs font-bold rounded-bl-3xl">Integration Hub</div>
+                        <div class="mb-10">
+                            <h4 class="text-3xl font-bold text-slate-900 mb-3">Enterprise API 허브</h4>
+                            <p class="text-blue-600 font-bold tracking-tight text-lg">기존 업무 시스템의 강력한 엔진으로 활용</p>
+                        </div>
+                        <p class="text-slate-600 mb-10 leading-relaxed font-medium">
+                            귀사의 CRM, ERP 등 내부 시스템에 부동산 조회 기능을 즉시 탑재하십시오. RESTful API 연동을 통해 데이터 수집부터 분석까지 전 과정을 자동화할 수 있습니다.
+                        </p>
+                        <div class="space-y-5 flex-grow">
+                            <div class="flex gap-4 items-center p-4 bg-white rounded-2xl shadow-sm border border-blue-100">
+                                <i class="fas fa-check-circle text-blue-600"></i>
+                                <span class="text-slate-700 font-bold text-sm">실시간 대량 조회(Batch) 및 자동 매핑 지원</span>
+                            </div>
+                            <div class="flex gap-4 items-center p-4 bg-white rounded-2xl shadow-sm border border-blue-100">
+                                <i class="fas fa-check-circle text-blue-600"></i>
+                                <span class="text-slate-700 font-bold text-sm">금융권 수준의 강력한 API 보안 인프라 제공</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- White-label Model -->
+                    <div class="reveal delay-200 p-12 border border-slate-100 rounded-[56px] bg-slate-50 flex flex-col relative overflow-hidden shadow-sm">
+                        <div class="absolute top-0 right-0 p-6 bg-slate-900 text-white text-xs font-bold rounded-bl-3xl">Independence</div>
+                        <div class="mb-10">
+                            <h4 class="text-3xl font-bold text-slate-900 mb-3">자체 서비스 구축 지원</h4>
+                            <p class="text-blue-600 font-bold tracking-tight text-lg">귀사만의 독자적인 자산 조회 플랫폼 런칭</p>
+                        </div>
+                        <p class="text-slate-600 mb-10 leading-relaxed font-medium">
+                            소유스캔의 검증된 기술력을 귀사의 브랜드로 운영하십시오. 화이트라벨링 구축 모델을 통해 차별화된 고유 플랫폼 서비스를 고객에게 즉시 제공할 수 있습니다.
+                        </p>
+                        <div class="space-y-5 flex-grow">
+                            <div class="flex gap-4 items-center p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
+                                <i class="fas fa-check-circle text-blue-600"></i>
+                                <span class="text-slate-700 font-bold text-sm">기업 고유 UI/UX 및 맞춤형 기능 개발 지원</span>
+                            </div>
+                            <div class="flex gap-4 items-center p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
+                                <i class="fas fa-check-circle text-blue-600"></i>
+                                <span class="text-slate-700 font-bold text-sm">자체 플랫폼 내 고유 자산 데이터 자산화</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. ROI & Corporate Benefits -->
+        <section id="roi-value" class="bg-slate-900 text-white">
+            <div class="container">
+                <div class="grid lg:grid-cols-2 gap-20 items-center">
+                    <div class="reveal">
+                        <h2 class="text-5xl font-black mb-10 leading-tight">소유스캔이 만드는<br><span class="text-blue-400">압도적인 비즈니스 가치</span>.</h2>
+                        <div class="space-y-10">
+                            <div class="flex gap-6">
+                                <div class="text-blue-400 text-2xl mt-1"><i class="fas fa-rocket"></i></div>
+                                <div>
+                                    <h4 class="text-2xl font-bold mb-3 text-white">업무 생산성 10배 혁신</h4>
+                                    <p class="text-slate-400 text-lg leading-relaxed">수작업으로 수일이 소요되던 자산 검증을 단 10초로 단축합니다. 빠른 의사결정은 귀사의 강력한 시장 경쟁력이 됩니다.</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-6">
+                                <div class="text-blue-400 text-2xl mt-1"><i class="fas fa-user-shield"></i></div>
+                                <div>
+                                    <h4 class="text-2xl font-bold mb-3 text-white">법적 안정성 완벽 보호</h4>
+                                    <p class="text-slate-400 text-lg leading-relaxed">개인정보보호 및 신용정보법 가이드라인을 완벽히 준수한 프로세스를 제공하여 기업의 법적 불안감을 원천 차단합니다.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="reveal delay-200">
+                        <div class="bg-white/5 p-12 rounded-[56px] border border-white/10 backdrop-blur-xl">
+                            <h4 class="text-2xl font-bold mb-10 text-center text-blue-400">Expected Performance Metrics</h4>
+                            <div class="space-y-8">
+                                <div class="flex flex-col md:flex-row items-center justify-between border-b border-white/10 pb-6 text-center md:text-left">
+                                    <span class="text-slate-400 font-bold mb-2 md:mb-0">평균 조사 속도 향상</span>
+                                    <span class="text-4xl font-black text-blue-400">1,200% ↑</span>
+                                </div>
+                                <div class="flex flex-col md:flex-row items-center justify-between border-b border-white/10 pb-6 text-center md:text-left">
+                                    <span class="text-slate-400 font-bold mb-2 md:mb-0">데이터 정합성 보장</span>
+                                    <span class="text-4xl font-black text-blue-400">99.8%</span>
+                                </div>
+                                <div class="flex flex-col md:flex-row items-center justify-between text-center md:text-left">
+                                    <span class="text-slate-400 font-bold mb-2 md:mb-0">연간 조사 총비용 절감</span>
+                                    <span class="text-4xl font-black text-blue-400">최대 70% ↓</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 9. Contact & Footer (깔끔하게 정리됨) -->
+        <section id="contact" class="bg-slate-50">
+            <div class="container">
+                <div class="bg-[#191F28] rounded-[64px] p-16 md:p-24 text-center relative overflow-hidden reveal shadow-2xl">
+                    <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+                        <div class="absolute top-[-50%] left-[-20%] w-[80%] h-[150%] bg-blue-600 rounded-full blur-[150px]"></div>
+                    </div>
+
+                    <div class="relative z-10">
+                        <h2 class="text-4xl md:text-5xl font-black text-white mb-10 tracking-tight">
+                            데이터의 실체,<br>지금 확인하세요.
+                        </h2>
+                        
+                        <div class="grid md:grid-cols-2 gap-x-12 gap-y-6 text-left max-w-3xl mx-auto border-t border-white/10 pt-12">
+                            <p class="text-slate-400 text-sm">
+                                <span class="text-white block font-bold mb-1">공식 웹사이트</span>
+                                <a href="http://soyouscan.com" target="_blank" class="text-blue-400 hover:underline">soyouscan.com</a>
+                            </p>
+                            <p class="text-slate-400 text-sm">
+                                <span class="text-white block font-bold mb-1">문의 및 제휴</span>
+                                <a href="mailto:sspluskorea@naver.com" class="text-blue-400 hover:underline">sspluskorea@naver.com</a>
+                            </p>
+                            <p class="text-slate-400 text-sm">
+                                <span class="text-white block font-bold mb-1">본사 주소</span>
+                                대구 동구 장등로 56, 벽산E-솔렌스힐 상가 121호
+                            </p>
+                            <p class="text-slate-400 text-sm">
+                                <span class="text-white block font-bold mb-1">사업자 등록정보</span>
+                                714-88-02750 | 법인 170111-0900391
+                            </p>
+                        </div>
+                        
+                        <div class="mt-20 text-slate-600 text-xs">
+                            &copy; 2025 SOYOU SCAN. ㈜조회서비스 All rights reserved.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        function downloadPDF() {
+            const loader = document.getElementById('loading-overlay');
+            loader.style.display = 'flex';
+
+            const element = document.body;
+            const opt = {
+                margin:       [0, 0, 0, 0],
+                filename:     '소유스캔_B2B_제안서.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                loader.style.display = 'none';
+            }).catch(err => {
+                console.error("PDF generation error:", err);
+                loader.style.display = 'none';
+                alert("PDF 생성 중 오류가 발생했습니다.");
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const scroller = document.getElementById('scroller');
+            const header = document.getElementById('main-header');
+            const sections = document.querySelectorAll('section');
+            const navDots = document.querySelectorAll('.nav-dot');
+            const logoText = document.getElementById('logo-text');
+
+            scroller.addEventListener('scroll', () => {
+                if (scroller.scrollTop > 50) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            });
+
+            const observerOptions = {
+                root: scroller,
+                threshold: 0.3,
+                rootMargin: "-10% 0px -10% 0px"
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        const id = entry.target.getAttribute('id');
+                        
+                        navDots.forEach(dot => {
+                            dot.classList.toggle('active', dot.dataset.target === id);
+                        });
+
+                        const isDarkBg = ['safegray', 'roi-value'].includes(id); 
+                        if (isDarkBg) {
+                            logoText.style.color = 'white';
+                        } else {
+                            logoText.style.color = '#191F28';
+                        }
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => observer.observe(section));
+            
+            navDots.forEach(dot => {
+                dot.addEventListener('click', () => {
+                    const targetId = dot.dataset.target;
+                    document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
