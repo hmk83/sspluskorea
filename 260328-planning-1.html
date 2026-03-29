@@ -59,19 +59,38 @@
 
 <body>
 
+  <!-- ZOOM CONTROLS -->
+  <div
+    class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-white px-6 py-3 rounded-full shadow-2xl border border-gray-200 flex items-center gap-6 z-50">
+    <button onclick="zoomOut()" class="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"><i
+        data-lucide="minus" class="w-5 h-5"></i></button>
+    <span id="zoom-level"
+      class="font-extrabold text-gray-700 text-sm min-w-[3rem] text-center cursor-default">100%</span>
+    <button onclick="zoomIn()" class="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"><i
+        data-lucide="plus" class="w-5 h-5"></i></button>
+    <div class="w-px h-6 bg-gray-300"></div>
+    <button onclick="fitToScreen()" class="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
+      title="화면에 맞추기 (전체 보기)"><i data-lucide="maximize" class="w-5 h-5"></i></button>
+  </div>
+
   <!-- CANVAS WRAPPER -->
-  <div id="figma-canvas" class="canvas-container flex flex-col gap-32 min-w-max">
+  <div id="figma-canvas" class="canvas-container">
 
-    <div class="mb-10">
-      <h1 class="text-6xl font-extrabold text-slate-800 tracking-tight flex items-center gap-6">
-        <i data-lucide="layout-dashboard" class="w-16 h-16 text-blue-600"></i> 쉽다쉬워 세무 자동화 솔루션 전체 화면 설계도
-      </h1>
-      <p class="text-2xl text-slate-500 mt-6 font-medium">마우스 휠이나 스크롤 바를 이용하여 전체 페이지 플로우를 확인하세요.</p>
+    <!-- SCALABLE CONTENT WRAPPER -->
+    <div id="canvas-content"
+      class="origin-top-left transition-transform duration-300 ease-out flex flex-col gap-32 min-w-max">
+
+      <div class="mb-10">
+        <h1 class="text-6xl font-extrabold text-slate-800 tracking-tight flex items-center gap-6">
+          <i data-lucide="layout-dashboard" class="w-16 h-16 text-blue-600"></i> 쉽다쉬워 세무 자동화 솔루션 전체 화면 설계도
+        </h1>
+        <p class="text-2xl text-slate-500 mt-6 font-medium">마우스 휠(Ctrl/Cmd)이나 하단 컨트롤 바를 이용하여 전체 페이지 플로우를 확인하세요.</p>
+      </div>
+
+      <!-- CANVAS INJECTION POINT -->
+      <div id="flow-container" class="flex flex-col gap-40"></div>
+
     </div>
-
-    <!-- CANVAS INJECTION POINT -->
-    <div id="flow-container" class="flex flex-col gap-40"></div>
-
   </div>
 
   <script>
@@ -252,6 +271,43 @@
       </div>
     `;
 
+    const screenSettings = wrapAccountant('settings', `
+      <div class="p-8 h-full overflow-y-auto flex flex-col gap-8">
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 mb-4">임직원(사용자) 계정 관리</h3>
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="p-4 border-b flex justify-between items-center bg-gray-50">
+              <span class="text-sm text-gray-600">총 2명 등록됨</span>
+              <button class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold">임직원 추가 등록</button>
+            </div>
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-white">
+                <tr><th class="px-6 py-3 text-left text-xs font-bold text-gray-500">이름</th><th class="px-6 py-3 text-left text-xs font-bold text-gray-500">아이디</th><th class="px-6 py-3 text-left text-xs font-bold text-gray-500">연락처</th><th class="px-6 py-3 text-left text-xs font-bold text-gray-500">권한</th><th class="px-6 py-3 text-center text-xs font-bold text-gray-500">관리</th></tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <tr><td class="px-6 py-3 text-sm font-bold">홍길동 세무사</td><td class="px-6 py-3 text-sm">hong_admin</td><td class="px-6 py-3 text-sm">010-1234-5678</td><td class="px-6 py-3 text-sm"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-bold">마스터</span></td><td class="px-6 py-3 text-sm text-center text-blue-500">수정</td></tr>
+                <tr><td class="px-6 py-3 text-sm font-bold">김지영 대리</td><td class="px-6 py-3 text-sm">kim_tax</td><td class="px-6 py-3 text-sm">010-2345-6789</td><td class="px-6 py-3 text-sm"><span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs font-bold">일반직원</span></td><td class="px-6 py-3 text-sm text-center text-blue-500">수정</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2"><i data-lucide="shield-check" class="w-5 h-5 text-emerald-600"></i> 위하고(WEHAGO) 자동 스크래핑 연동 설정</h3>
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col gap-6">
+            <p class="text-sm text-gray-600">마스터 계정 정보를 입력합니다.</p>
+            <div class="grid grid-cols-2 gap-6 max-w-2xl">
+              <div><label class="block text-sm font-bold text-gray-700">WEHAGO 아이디</label><input type="text" value="tax_master" class="mt-1 block w-full border border-gray-300 rounded p-2 bg-gray-50" /></div>
+              <div><label class="block text-sm font-bold text-gray-700">WEHAGO 비밀번호</label><input type="password" value="••••••••" class="mt-1 block w-full border border-gray-300 rounded p-2 bg-gray-50" /></div>
+            </div>
+            <div class="flex gap-3">
+              <button class="px-6 py-2 bg-slate-800 text-white rounded font-bold">저장하기</button>
+              <button class="px-6 py-2 bg-white border border-gray-300 text-gray-700 rounded font-bold flex items-center gap-2"><i data-lucide="play" class="w-4 h-4"></i> 인증 테스트 실행</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `);
+
     const screenClients = wrapAccountant('clients', `
       <div class="p-8 h-full flex flex-col">
         <div class="flex justify-between items-end mb-6">
@@ -375,6 +431,46 @@
       </div>
     `);
 
+    const clientStep2 = wrapClientDetail('step2', `
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="p-6 border-b border-gray-100 bg-emerald-50 flex justify-between items-center">
+          <div><h2 class="text-lg font-bold text-emerald-900">확정 급여대장 승인</h2><p class="text-sm text-emerald-700 mt-1">세무대리인이 위하고에서 최종 확정한 급여 내역입니다.</p></div>
+          <span class="px-3 py-1 rounded-full text-sm font-bold bg-amber-100 text-amber-700">승인대기</span>
+        </div>
+        <div class="p-8">
+          <div class="grid grid-cols-4 gap-4 mb-6">
+            <div class="border border-gray-200 rounded p-4 text-center"><p class="text-xs text-gray-500 mb-1">총 인원</p><p class="text-lg font-bold">5명</p></div>
+            <div class="border border-gray-200 rounded p-4 text-center"><p class="text-xs text-gray-500 mb-1">과세 총액</p><p class="text-lg font-bold text-gray-800">19,500,000원</p></div>
+            <div class="border border-gray-200 rounded p-4 text-center"><p class="text-xs text-gray-500 mb-1">4대보험 및 세금 공제</p><p class="text-lg font-bold text-red-600">-1,820,000원</p></div>
+            <div class="border border-blue-200 bg-blue-50 rounded p-4 text-center"><p class="text-xs text-blue-600 mb-1">실지급액 (차인지급액)</p><p class="text-lg font-bold text-blue-800">17,680,000원</p></div>
+          </div>
+          <div class="flex gap-4">
+            <button class="flex-1 py-3 bg-white border border-gray-300 rounded font-bold text-gray-700 flex justify-center items-center gap-2"><i data-lucide="file-spreadsheet" class="w-5 h-5"></i> 확정 급여대장 상세 엑셀 다운로드</button>
+            <button class="flex-1 py-3 rounded font-bold text-white bg-emerald-600 flex justify-center items-center gap-2"><i data-lucide="check-circle" class="w-5 h-5"></i> 최종 급여 내역 승인하기</button>
+          </div>
+        </div>
+      </div>
+    `);
+
+    const clientStep3 = wrapClientDetail('step3', `
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+        <h2 class="text-xl font-bold text-gray-900 mb-2">세금 신고서 및 납부서 확인</h2>
+        <p class="text-sm text-gray-500 mb-6">원천세 및 지방세 신고가 완료되어 납부서가 발행되었습니다.</p>
+        <div class="grid grid-cols-2 gap-6">
+          <div class="border border-gray-200 rounded-lg p-5 bg-white shadow-sm flex flex-col h-full">
+            <div class="flex items-center gap-3 mb-4"><div class="bg-blue-100 p-2 rounded text-blue-600"><i data-lucide="receipt" class="w-6 h-6"></i></div><div><p class="font-bold text-gray-800">국세 (원천세) 납부서</p><p class="text-xs text-gray-500">납부기한: 2026-05-10</p></div></div>
+            <div class="bg-gray-50 p-3 rounded mb-4 text-center"><p class="text-sm text-gray-500">납부할 세액</p><p class="text-xl font-bold text-gray-900">1,250,000원</p></div>
+            <button class="mt-auto w-full py-2 bg-blue-600 text-white rounded font-bold">납부서 PDF 다운로드</button>
+          </div>
+          <div class="border border-gray-200 rounded-lg p-5 bg-white shadow-sm flex flex-col h-full">
+            <div class="flex items-center gap-3 mb-4"><div class="bg-purple-100 p-2 rounded text-purple-600"><i data-lucide="receipt" class="w-6 h-6"></i></div><div><p class="font-bold text-gray-800">지방세 (특별징수분) 납부서</p><p class="text-xs text-gray-500">납부기한: 2026-05-10</p></div></div>
+            <div class="bg-gray-50 p-3 rounded mb-4 text-center"><p class="text-sm text-gray-500">납부할 세액</p><p class="text-xl font-bold text-gray-900">125,000원</p></div>
+            <button class="mt-auto w-full py-2 bg-purple-600 text-white rounded font-bold">납부서 PDF 다운로드</button>
+          </div>
+        </div>
+      </div>
+    `);
+
     const clientStep4 = wrapClientDetail('step4', `
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col flex-1 overflow-hidden h-[600px]">
         <div class="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">
@@ -408,41 +504,97 @@
       let output = '';
 
       // ROW 1
-      output += buildRow('온보딩 및 초기 설정', [
-        { title: '1. 세무대리인 로그인', desc: '시스템 진입', html: screenLogin },
-        { title: '2. 세무대리인 회원가입', desc: '초기 세팅', html: screenSignup }
+      output += buildRow('1. 온보딩 및 초기 설정', [
+        { title: '1-1. 세무대리인 로그인', desc: '시스템 진입', html: screenLogin },
+        { title: '1-2. 세무대리인 회원가입', desc: '초기 세팅', html: screenSignup },
+        { title: '1-3. 설정 및 임직원 관리', desc: '위하고 연동 마스터 설정', html: screenSettings }
       ]);
       output += createDownArrow('이후 세무대리인 전용 업무 시작');
 
       // ROW 2
-      output += buildRow('세무대리인 기초 업무 자동화', [
-        { title: '3. 수임처 일괄 관리', desc: '위하고 연동 및 계정 생성', html: screenClients },
-        { title: '4. 원천징수 일괄 자료요청', desc: '수임처 선택 후 자동 요청/스크래핑', html: screenWithholding },
-        { title: '4-1. [진행중 모달]', desc: '스크래핑 자동 대사 시뮬레이션', html: screenWithholding, overlay: overlayScraping },
-        { title: '4-2. [수동 검토 모달]', desc: '예외(고객 수정) 발생 건 리뷰', html: screenWithholding, overlay: overlayReview }
+      output += buildRow('2. 세무대리인 기초 업무 자동화', [
+        { title: '2-1. 수임처 일괄 관리', desc: '위하고 연동 및 계정 생성', html: screenClients },
+        { title: '2-2. 원천징수 일괄 자료요청', desc: '수임처 선택 후 자동 요청/스크래핑', html: screenWithholding },
+        { title: '2-3. [진행중 모달]', desc: '스크래핑 자동 대사 시뮬레이션', html: screenWithholding, overlay: overlayScraping },
+        { title: '2-4. [수동 검토 모달]', desc: '예외(고객 수정) 발생 건 리뷰', html: screenWithholding, overlay: overlayReview }
       ]);
       output += createDownArrow('위하고 최종 업로드 후 수임처 포털로 전달');
 
       // ROW 3
-      output += buildRow('수임처(고객사) 전용 소통 포털 (Client Portal)', [
-        { title: '5. 수임처 메인 게시판', desc: '월별 업무 진척도 아카이브', html: screenClientBoard },
-        { title: '6. 기초 자료 제출 듀얼 패스', desc: '이상 없음 즉시확인 OR 수정 엑셀 업로드', html: clientStep1 },
-        { title: '7. 임직원 급여 내역 확인', desc: '세분화된 급여 데이터 및 이체용 엑셀 다운', html: clientStep4 }
+      output += buildRow('3. 수임처(고객사) 전용 소통 포털 (Client Portal)', [
+        { title: '3-1. 수임처 메인 게시판', desc: '월별 업무 진척도 아카이브', html: screenClientBoard },
+        { title: '3-2. 기초 자료 제출 듀얼 패스', desc: '이상 없음 즉시확인 OR 수정 엑셀 업로드', html: clientStep1 },
+        { title: '3-3. 확정 급여대장 승인', desc: '최종 급여 내역 확인 및 승인', html: clientStep2 },
+        { title: '3-4. 세금 납부서 확인', desc: '국세 및 지방세 납부서 개시 확인', html: clientStep3 },
+        { title: '3-5. 임직원 급여 내역 확인', desc: '세분화된 급여 데이터 및 이체용 엑셀 다운', html: clientStep4 }
       ]);
       output += createDownArrow('수임처 최종 승인 후 세무대리인 마감 업무');
 
       // ROW 4
-      output += buildRow('세무대리인 최종 마감 및 신고', [
-        { title: '8. 확정 급여대장 관리', desc: '위하고에서 최종 DB 다운로드 및 일괄 전송', html: screenPayroll },
-        { title: '9. 신고 및 납부서 일괄 개시', desc: '홈택스 자동신고 및 납부서 고객사 개시', html: screenTaxReport }
+      output += buildRow('4. 세무대리인 최종 마감 및 신고', [
+        { title: '4-1. 확정 급여대장 관리', desc: '위하고에서 최종 DB 다운로드 및 일괄 전송', html: screenPayroll },
+        { title: '4-2. 신고 및 납부서 일괄 개시', desc: '홈택스 자동신고 및 납부서 고객사 개시', html: screenTaxReport }
       ]);
 
       container.innerHTML = output;
       lucide.createIcons();
     }
 
-    // Initialize
+    // --- ZOOM & PAN LOGIC ---
+    let currentScale = 1;
+
+    function updateZoom() {
+      const contentEl = document.getElementById('canvas-content');
+      const zoomLabel = document.getElementById('zoom-level');
+      if (contentEl && zoomLabel) {
+        contentEl.style.transform = `scale(${currentScale})`;
+        zoomLabel.innerText = Math.round(currentScale * 100) + '%';
+      }
+    }
+
+    function zoomIn() {
+      currentScale = Math.min(currentScale * 1.2, 3); // 최대 300%
+      updateZoom();
+    }
+
+    function zoomOut() {
+      currentScale = Math.max(currentScale / 1.2, 0.1); // 최소 10%
+      updateZoom();
+    }
+
+    function fitToScreen() {
+      const contentEl = document.getElementById('canvas-content');
+      if (!contentEl) return;
+
+      const rawWidth = contentEl.scrollWidth;
+      const rawHeight = contentEl.scrollHeight;
+
+      // 여백 (UI 공간 및 시각적 안정감을 위해)
+      const paddingX = 200;
+      const paddingY = 200;
+
+      const scaleX = (window.innerWidth - paddingX) / rawWidth;
+      const scaleY = (window.innerHeight - paddingY) / rawHeight;
+
+      currentScale = Math.min(scaleX, scaleY);
+
+      updateZoom();
+
+      // 스크롤 초기화
+      const canvas = document.getElementById('figma-canvas');
+      if (canvas) {
+        canvas.scrollLeft = 0;
+        canvas.scrollTop = 0;
+      }
+    }
+
+    // Initialize Canvas drawing
     drawCanvas();
+
+    // 화면 렌더링 직후 fitToScreen 실행
+    setTimeout(() => {
+      fitToScreen();
+    }, 50);
 
     // Canvas dragging logic
     const canvas = document.getElementById('figma-canvas');
@@ -471,6 +623,15 @@
       canvas.scrollLeft = scrollLeft - walkX;
       canvas.scrollTop = scrollTop - walkY;
     });
+
+    // 마우스 휠(Ctrl/Cmd)을 통한 확대/축소 지원
+    canvas.addEventListener('wheel', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        if (e.deltaY > 0) zoomOut();
+        else zoomIn();
+      }
+    }, { passive: false });
 
   </script>
 </body>
