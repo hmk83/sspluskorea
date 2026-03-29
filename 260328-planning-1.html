@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>쉽다쉬워 - 피그마 뷰(전체 플로우)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+    body {
+      font-family: 'Pretendard', sans-serif;
+      background-color: #E5E7EB;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Hide scrollbars for individual frames to look like artboards */
+    .artboard {
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    /* Custom canvas scrolling */
+    .canvas-container {
+      width: 100vw;
+      height: 100vh;
+      overflow: auto;
+      padding: 100px;
+      cursor: grab;
+    }
+
+    .canvas-container:active {
+      cursor: grabbing;
+    }
+
+    ::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #E5E7EB;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #9CA3AF;
+      border-radius: 6px;
+      border: 3px solid #E5E7EB;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #6B7280;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- CANVAS WRAPPER -->
+  <div id="figma-canvas" class="canvas-container flex flex-col gap-32 min-w-max">
+
+    <div class="mb-10">
+      <h1 class="text-6xl font-extrabold text-slate-800 tracking-tight flex items-center gap-6">
+        <i data-lucide="layout-dashboard" class="w-16 h-16 text-blue-600"></i> 쉽다쉬워 세무 자동화 솔루션 전체 화면 설계도
+      </h1>
+      <p class="text-2xl text-slate-500 mt-6 font-medium">마우스 휠이나 스크롤 바를 이용하여 전체 페이지 플로우를 확인하세요.</p>
+    </div>
+
+    <!-- CANVAS INJECTION POINT -->
+    <div id="flow-container" class="flex flex-col gap-40"></div>
+
+  </div>
+
+  <script>
+    // --- DUMMY DATA ---
+    const clients = [
+      { id: 1, code: '1001', name: '테크솔루션(주)', bizNo: '123-45-67890', manager: '이민수', server: 'SmartA-01', userId: '0212345678', userName: '김철수', useYn: 'Y', mgmtCount: 3, cycle: '월별', regDate: '2025-01-10', w_status: '대기', w_excelData: null, w_edited: false, p_status: '대기', t_status: '대기', empCount: 45, taxable: 155000000, nonTaxable: 8500000, natPen: 6975000, hlthIns: 5493000, ltCare: 711000, empIns: 1395000, incTax: 8500000, locTax: 850000, netPay: 139576000 },
+      { id: 2, code: '1002', name: '디자인그룹 픽셀', bizNo: '234-56-78901', manager: '최지훈', server: 'SmartA-02', userId: '0298765432', userName: '박영희', useYn: 'Y', mgmtCount: 2, cycle: '반기', regDate: '2025-01-15', w_status: '수신', w_excelData: '202604_급여대장_수정.xlsx', w_edited: true, p_status: '대기', t_status: '대기', empCount: 12, taxable: 38000000, nonTaxable: 2400000, natPen: 1710000, hlthIns: 1346000, ltCare: 174000, empIns: 342000, incTax: 1250000, locTax: 125000, netPay: 35453000 },
+      { id: 3, code: '1003', name: '글로벌트레이딩', bizNo: '345-67-89012', manager: '김도윤', server: 'SmartA-01', userId: '0512345678', userName: '정재민', useYn: 'Y', mgmtCount: 5, cycle: '월별', regDate: '2025-02-20', w_status: '확인', w_excelData: '202604_급여대장.xlsx', w_edited: false, p_status: '대기', t_status: '대기', empCount: 28, taxable: 92000000, nonTaxable: 4200000, natPen: 4140000, hlthIns: 3260000, ltCare: 422000, empIns: 828000, incTax: 4100000, locTax: 410000, netPay: 83040000 },
+    ];
+
+    const employees = [
+      { id: 1, name: '홍길동 세무사', empId: 'hong_admin', phone: '010-1234-5678', role: '마스터' },
+      { id: 2, name: '김지영 대리', empId: 'kim_tax', phone: '010-2345-6789', role: '일반직원' },
+    ];
+
+    const clientEmployees = [
+      { id: 1, empNo: '24001', name: '최지훈', dept: '경영지원팀', basePay: 4000000, bonus: 500000, overtime: 0, meal: 200000, vehicle: 200000, natPen: 202500, hlthIns: 159500, ltCare: 20600, empIns: 40500, incTax: 215000, locTax: 21500 },
+      { id: 2, empNo: '24002', name: '박영희', dept: '디자인팀', basePay: 3200000, bonus: 300000, overtime: 150000, meal: 200000, vehicle: 0, natPen: 164250, hlthIns: 129300, ltCare: 16700, empIns: 32800, incTax: 145000, locTax: 14500 },
+    ];
+
+    const portalRecords = [
+      { id: '2026-04', month: '2026년 04월', isSubmitted: false, isApproved: false, hasReceipt: false },
+      { id: '2026-03', month: '2026년 03월', isSubmitted: true, isApproved: true, hasReceipt: true },
+    ];
+
+    const formatCurrency = (num) => new Intl.NumberFormat('ko-KR').format(num);
+    const getBadgeClass = (status) => {
+      const styles = {
+        '대기': 'bg-gray-100 text-gray-600',
+        '요청': 'bg-blue-100 text-blue-800',
+        '수신': 'bg-red-100 text-red-800 border border-red-200',
+        '확인': 'bg-emerald-100 text-emerald-800 border border-emerald-200',
+        '업로드완료': 'bg-slate-800 text-white',
+        'DB변환완료': 'bg-indigo-100 text-indigo-800',
+        '요청(전달)': 'bg-blue-100 text-blue-800',
+      };
+      return `inline-flex px-2.5 py-1 rounded text-xs font-bold ${styles[status] || styles['대기']}`;
+    };
+
+    // --- TEMPLATE GENERATORS ---
+
+    // 1. Frame Wrapper
+    const createFrame = (title, desc, contentHtml, overlayHtml = '') => `
+      <div class="flex flex-col items-center">
+        <div class="bg-white border-4 border-slate-800 text-slate-800 px-8 py-3 rounded-2xl shadow-lg mb-6 flex flex-col items-center">
+          <h2 class="text-2xl font-extrabold">${title}</h2>
+          <p class="text-sm font-medium text-slate-500 mt-1">${desc}</p>
+        </div>
+        <div class="artboard w-[1280px] h-[800px] bg-white rounded-xl shadow-2xl overflow-hidden relative flex flex-col border border-gray-300">
+          ${contentHtml}
+          ${overlayHtml}
+        </div>
+      </div>
+    `;
+
+    const createArrow = () => `
+      <div class="flex items-center justify-center px-4">
+        <i data-lucide="arrow-right" class="w-20 h-20 text-blue-500 stroke-[3px]"></i>
+      </div>
+    `;
+
+    const createDownArrow = (title) => `
+      <div class="flex flex-col items-center justify-center w-full py-8 gap-4">
+        <div class="bg-blue-100 text-blue-800 px-6 py-2 rounded-full font-extrabold text-lg tracking-wide border border-blue-200">${title}</div>
+        <i data-lucide="arrow-down" class="w-24 h-24 text-blue-500 stroke-[3px]"></i>
+      </div>
+    `;
+
+    // 2. Accountant Layout Wrapper
+    const menus = [
+      { id: 'clients', icon: 'users', label: '수임처 일괄 관리', title: '수임처 일괄 관리' },
+      { id: 'withholding', icon: 'check-circle', label: '원천징수 관리 (급여요청)', title: '원천징수 관리 (일괄 급여요청)' },
+      { id: 'payroll', icon: 'file-spreadsheet', label: '확정 급여대장 관리', title: '확정 급여대장 상세 관리' },
+      { id: 'taxReport', icon: 'receipt', label: '신고 및 납부서 관리', title: '신고 및 납부서 일괄 관리' },
+      { id: 'settings', icon: 'settings', label: '설정 및 임직원 관리', title: '설정 및 임직원 관리' },
+    ];
+
+    const wrapAccountant = (activeMenuId, mainContentHtml) => {
+      const title = menus.find(m => m.id === activeMenuId)?.title || '';
+      return `
+        <div class="flex h-full w-full font-sans text-gray-900 bg-gray-100">
+          <div class="w-64 bg-slate-900 h-full text-white flex flex-col shadow-xl">
+            <div class="p-6 border-b border-slate-800">
+              <h1 class="text-2xl font-extrabold tracking-wider text-blue-400">쉽다쉬워</h1>
+              <p class="text-xs text-slate-400 mt-1">세무 자동화 B2B 솔루션</p>
+            </div>
+            <nav class="flex-1 p-4 space-y-2">
+              ${menus.map(m => `
+                <div class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left ${m.id === activeMenuId ? 'bg-blue-600 text-white shadow-md' : 'text-slate-300'}">
+                  <i data-lucide="${m.icon}" class="w-5 h-5"></i> <span class="font-medium text-sm">${m.label}</span>
+                </div>
+              `).join('')}
+            </nav>
+          </div>
+          <div class="flex-1 flex flex-col h-full overflow-hidden">
+            <header class="bg-white shadow-sm h-16 flex items-center justify-between px-8 border-b border-gray-200">
+              <h2 class="text-xl font-bold text-gray-800">${title}</h2>
+              <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 border-l pl-4 border-gray-200">
+                  <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold text-sm">세</div>
+                  <span class="text-sm font-medium text-gray-700">관리자님</span>
+                </div>
+              </div>
+            </header>
+            <main class="flex-1 bg-slate-50/50">
+              ${mainContentHtml}
+            </main>
+          </div>
+        </div>
+      `;
+    };
+
+    // 3. Client Portal Wrapper
+    const wrapClient = (mainContentHtml) => `
+      <div class="flex flex-col h-full w-full bg-slate-50 font-sans text-gray-900">
+        <header class="bg-white shadow h-16 flex items-center justify-between px-8 border-b-4 border-blue-600 flex-shrink-0">
+          <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+            <i data-lucide="building-2" class="w-6 h-6 text-blue-600"></i> 쉽다쉬워 수임처 포털 <span class="text-sm font-normal text-gray-500 ml-2">세무 자동화 B2B 솔루션</span>
+          </h1>
+          <div class="flex items-center gap-3">
+            <i data-lucide="user-circle" class="w-6 h-6 text-gray-400"></i>
+            <span class="text-sm font-bold text-gray-700">디자인그룹 픽셀 님</span>
+          </div>
+        </header>
+        <main class="flex-1 max-w-[1400px] w-full mx-auto p-8 flex flex-col gap-6">
+          ${mainContentHtml}
+        </main>
+      </div>
+    `;
+
+    // --- SCREEN TEMPLATES ---
+
+    const screenLogin = `
+      <div class="w-full h-full bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div class="sm:mx-auto sm:w-full sm:max-w-md">
+          <div class="flex justify-center mb-4 text-blue-600"><i data-lucide="building-2" class="w-12 h-12"></i></div>
+          <h2 class="text-center text-3xl font-extrabold text-gray-900">쉽다쉬워</h2>
+          <p class="mt-2 text-center text-sm text-gray-600">세무 자동화 B2B 솔루션</p>
+        </div>
+        <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+          <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <div class="space-y-6">
+              <div><label class="block text-sm font-medium text-gray-700">아이디</label><input type="text" value="admin" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3" /></div>
+              <div><label class="block text-sm font-medium text-gray-700">비밀번호</label><input type="password" value="••••••••" class="mt-1 block w-full border border-gray-300 rounded-md py-2 px-3" /></div>
+              <div class="flex gap-4">
+                <button class="w-full py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600">세무대리인 로그인</button>
+                <button class="w-full py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white">수임처 로그인</button>
+              </div>
+              <div class="mt-4 text-center border-t pt-4">
+                <button class="text-sm font-medium text-blue-600 flex items-center justify-center gap-1 w-full"><i data-lucide="user-plus" class="w-4 h-4"></i> 세무법인 회원가입</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const screenSignup = `
+      <div class="w-full h-full bg-gray-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-xl overflow-hidden w-full">
+          <div class="bg-blue-600 px-6 py-4 text-white">
+            <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="building-2" class="w-5 h-5"></i> 세무대리인 회원가입</h2>
+            <p class="text-blue-100 text-sm mt-1">일괄 자동화의 시작, 쉽다쉬워에 가입하세요.</p>
+          </div>
+          <div class="p-8 space-y-6">
+            <div class="grid grid-cols-2 gap-6">
+              <div><label class="block text-sm font-bold text-gray-700">세무법인명/사무소명</label><input type="text" value="세무법인 세율" class="mt-1 block w-full border border-gray-300 rounded p-2" /></div>
+              <div><label class="block text-sm font-bold text-gray-700">사업자등록번호</label><input type="text" value="123-45-67890" class="mt-1 block w-full border border-gray-300 rounded p-2" /></div>
+              <div><label class="block text-sm font-bold text-gray-700">관리자명 (대표자)</label><input type="text" value="홍길동" class="mt-1 block w-full border border-gray-300 rounded p-2" /></div>
+              <div><label class="block text-sm font-bold text-gray-700">휴대폰 번호</label><input type="text" value="010-1234-5678" class="mt-1 block w-full border border-gray-300 rounded p-2" /></div>
+            </div>
+            <div class="border-t pt-6 flex justify-end gap-3">
+              <button class="px-6 py-2 border rounded font-bold text-gray-600 bg-gray-50">취소</button>
+              <button class="px-6 py-2 bg-blue-600 text-white rounded font-bold">가입 완료 및 로그인</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const screenClients = wrapAccountant('clients', `
+      <div class="p-8 h-full flex flex-col">
+        <div class="flex justify-between items-end mb-6">
+          <div><h3 class="text-xl font-bold text-gray-900">수임처 일괄 관리</h3><p class="text-sm text-gray-500 mt-1">위하고 DB와 동기화하여 수많은 수임처 목록을 생성하고 포털 계정을 자동 부여합니다.</p></div>
+          <button class="px-5 py-2.5 bg-emerald-600 text-white rounded-md flex items-center gap-2 text-sm font-bold shadow-sm"><i data-lucide="refresh-cw" class="w-4 h-4"></i> 위하고 DB 일괄 스크래핑 동기화</button>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 flex-1 overflow-hidden flex flex-col">
+          <div class="overflow-hidden flex-1"><table class="min-w-full divide-y divide-gray-200 whitespace-nowrap"><thead class="bg-gray-50"><tr><th class="px-4 py-3 text-left text-xs font-bold text-gray-500">회사코드</th><th class="px-4 py-3 text-left text-xs font-bold text-gray-500">상호</th><th class="px-4 py-3 text-left text-xs font-bold text-gray-500">담당자</th><th class="px-4 py-3 text-left text-xs font-bold text-gray-500">사용자ID(숫자)</th><th class="px-4 py-3 text-center text-xs font-bold text-gray-500">주기</th></tr></thead><tbody class="bg-white divide-y divide-gray-100">${clients.map(c => `<tr class="hover:bg-slate-50"><td class="px-4 py-3 text-sm font-bold">${c.code}</td><td class="px-4 py-3 text-sm font-bold text-gray-800">${c.name}</td><td class="px-4 py-3 text-sm">${c.manager}</td><td class="px-4 py-3 text-sm font-bold text-blue-600">${c.userId}</td><td class="px-4 py-3 text-sm text-center">${c.cycle}</td></tr>`).join('')}</tbody></table></div>
+        </div>
+      </div>
+    `);
+
+    const screenWithholding = wrapAccountant('withholding', `
+      <div class="p-8 h-full flex flex-col">
+        <div class="flex justify-between items-end mb-6">
+          <div><h3 class="text-xl font-bold text-gray-900">원천징수 관리 및 일괄 자료 요청</h3><p class="text-sm text-gray-500 mt-1">수십 개의 수임처를 선택하여 자료를 요청하고, 확인이 끝난 내역을 위하고로 업로드합니다.</p></div>
+          <div class="flex gap-3">
+            <button class="px-5 py-2.5 rounded-md flex items-center gap-2 text-sm font-bold shadow-sm bg-slate-800 text-white"><i data-lucide="play" class="w-4 h-4"></i> 선택 수임처 일괄 스크래핑 및 자료요청</button>
+            <button class="px-5 py-2.5 rounded-md flex items-center gap-2 text-sm font-bold shadow-sm bg-blue-600 text-white"><i data-lucide="upload-cloud" class="w-4 h-4"></i> 확인 완료 건 위하고 일괄 자동업로드</button>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 flex-1 overflow-hidden flex flex-col">
+          <table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left w-12"><input type="checkbox" checked class="rounded" /></th><th class="px-6 py-3 text-left text-xs font-bold text-gray-500">수임처 정보</th><th class="px-6 py-3 text-center text-xs font-bold text-gray-500">상태</th><th class="px-6 py-3 text-left text-xs font-bold text-gray-500">수임처 업로드 엑셀 (소통포털)</th><th class="px-6 py-3 text-center text-xs font-bold text-gray-500">수동 검토 관리</th></tr></thead><tbody class="bg-white divide-y divide-gray-100">${clients.map(c => `<tr class="hover:bg-slate-50"><td class="px-6 py-4"><input type="checkbox" checked class="rounded" /></td><td class="px-6 py-4"><div class="text-sm text-gray-900 font-bold">${c.name}</div>${c.w_edited ? `<div class="text-xs text-red-600 font-bold mt-1 inline-flex gap-1 items-center bg-red-50 px-2 py-0.5 rounded"><i data-lucide="alert-circle" class="w-3 h-3"></i> 수임처 직접 수정 발생</div>` : ''}</td><td class="px-6 py-4 text-center">${getBadgeClass(c.w_status)}</td><td class="px-6 py-4 text-sm font-medium text-blue-600">${c.w_excelData ? `<div class="flex items-center gap-2"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i>${c.w_excelData}</div>` : '-'}</td><td class="px-6 py-4 text-center">${c.w_edited ? `<button class="text-xs bg-white border border-gray-300 px-3 py-1.5 rounded font-bold hover:bg-gray-50">엑셀 확인 및 리뷰</button>` : ''}</td></tr>`).join('')}</tbody></table>
+        </div>
+      </div>
+    `);
+
+    const overlayScraping = `
+      <div class="absolute inset-0 bg-black/60 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
+          <div class="p-5 bg-slate-800 text-white font-bold flex gap-2 items-center"><i data-lucide="shield-check" class="w-5 h-5"></i> 일괄 스크래핑 및 상태 업데이트 진행 중</div>
+          <div class="p-6 space-y-4 bg-gray-50">
+            <div class="flex items-start gap-4 p-4 rounded-lg border bg-white border-gray-200"><i data-lucide="check-circle-2" class="w-6 h-6 text-emerald-500"></i><div><h4 class="font-bold text-gray-900">요청 상태 전환</h4><p class="text-sm text-gray-500 mt-1">수임처 담당자에게 알림 발송 중...</p></div></div>
+            <div class="flex items-start gap-4 p-4 rounded-lg border bg-blue-50 border-blue-200"><i data-lucide="loader-2" class="w-6 h-6 text-blue-600 animate-spin"></i><div><h4 class="font-bold text-blue-900">수신 상태 전환</h4><p class="text-sm text-gray-500 mt-1">스크래핑 대사 및 고객사 업로드 시뮬레이션...</p></div></div>
+            <div class="flex items-start gap-4 p-4 rounded-lg border opacity-50"><div class="w-6 h-6 rounded-full border-2 border-gray-300 text-center text-sm font-bold text-gray-400">3</div><div><h4 class="font-bold text-gray-800">확인 상태로 자동 검증</h4><p class="text-sm text-gray-500 mt-1">예외 발생 건을 제외하고 자동 확인 처리됩니다.</p></div></div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const overlayReview = `
+      <div class="absolute inset-0 bg-black/60 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+          <div class="p-5 border-b bg-gray-50 flex justify-between items-center"><h3 class="text-lg font-bold text-gray-800">자료(급여) 엑셀 확인 및 검토</h3><i data-lucide="x" class="w-5 h-5 text-gray-500"></i></div>
+          <div class="p-6 space-y-5"><p class="font-bold text-lg text-gray-900">디자인그룹 픽셀</p><button class="w-full flex justify-between items-center p-4 border rounded-lg bg-blue-50"><div class="flex gap-3 items-center"><i data-lucide="file-text" class="w-5 h-5 text-blue-600"></i><span class="font-medium text-gray-800">202604_급여대장_수정.xlsx</span></div><i data-lucide="download" class="w-5 h-5 text-gray-400"></i></button><div class="bg-slate-50 p-3 rounded border text-sm text-gray-600"><p class="font-bold mb-1">진행 로그</p><p>• 일괄 자료 요청 발송 완료</p><p>• 수임처 수정본 엑셀 업로드 (수신)</p></div></div>
+          <div class="p-5 border-t bg-gray-50 flex justify-end gap-3"><button class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded font-bold">재요청 (수정요청)</button><button class="px-4 py-2 bg-blue-600 text-white rounded font-bold flex items-center gap-2"><i data-lucide="check-circle" class="w-4 h-4"></i> 이상 없음 (확인)</button></div>
+        </div>
+      </div>
+    `;
+
+    const screenPayroll = wrapAccountant('payroll', `
+      <div class="p-8 h-full flex flex-col">
+        <div class="flex justify-between items-end mb-6">
+          <div><h3 class="text-xl font-bold text-gray-900">확정 급여대장 일괄 관리 (상세 컬럼)</h3><p class="text-sm text-gray-500 mt-1">이전 메뉴에서 위하고로 업로드 완료된 수임처만 나타납니다.</p></div>
+          <div class="flex gap-3">
+            <button class="px-4 py-2.5 bg-slate-800 text-white rounded-md font-bold text-sm flex gap-2"><i data-lucide="database" class="w-4 h-4"></i> 선택 건 일괄 다운로드/DB변환</button>
+            <button class="px-4 py-2.5 bg-blue-600 text-white rounded-md font-bold text-sm flex gap-2"><i data-lucide="send" class="w-4 h-4"></i> 수임처 포털 일괄 전달(요청)</button>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 flex-1 flex flex-col overflow-hidden">
+          <div class="overflow-x-auto flex-1">
+            <table class="min-w-max w-full divide-y divide-gray-200 text-xs"><thead class="bg-slate-50"><tr><th class="px-4 py-3 text-left w-12 border-r"><input type="checkbox" checked class="rounded" /></th><th class="px-4 py-3 text-left font-bold text-slate-700 border-r">수임처명</th><th class="px-4 py-3 text-center font-bold text-slate-700 border-r">일괄상태</th><th class="px-4 py-3 text-right font-bold text-slate-700 bg-blue-50">과세총액</th><th class="px-4 py-3 text-right font-bold text-slate-700 bg-red-50">건강보험</th><th class="px-4 py-3 text-right font-bold text-slate-700 bg-red-50">근로소득세</th><th class="px-4 py-3 text-right font-bold text-emerald-800 bg-emerald-50">실지급액</th></tr></thead><tbody class="divide-y divide-gray-100">${clients.map(c => `<tr><td class="px-4 py-3 border-r"><input type="checkbox" checked class="rounded" /></td><td class="px-4 py-3 font-bold border-r text-sm">${c.name}</td><td class="px-4 py-3 text-center border-r"><span class="px-2 py-1 bg-gray-100 rounded font-bold text-gray-600">${c.p_status}</span></td><td class="px-4 py-3 text-right font-medium text-gray-600 bg-blue-50/30">${formatCurrency(c.taxable)}</td><td class="px-4 py-3 text-right text-red-500 bg-red-50/30">-${formatCurrency(c.hlthIns)}</td><td class="px-4 py-3 text-right text-red-500 bg-red-50/30">-${formatCurrency(c.incTax)}</td><td class="px-4 py-3 text-right font-bold text-emerald-700 bg-emerald-50/50 text-sm">${formatCurrency(c.netPay)}</td></tr>`).join('')}</tbody></table>
+          </div>
+        </div>
+      </div>
+    `);
+
+    const screenTaxReport = wrapAccountant('taxReport', `
+      <div class="p-8 h-full flex flex-col">
+        <div class="flex justify-between items-end mb-6">
+          <div><h3 class="text-xl font-bold text-gray-900">신고 및 납부서 일괄 개시 (마지막 단계)</h3><p class="text-sm text-gray-500 mt-1">자동신고 및 납부서를 포털에 한 번에 개시합니다.</p></div>
+          <div class="flex gap-3"><button class="px-4 py-2.5 bg-slate-800 text-white rounded-md font-bold text-sm">선택 건 일괄 홈택스 신고 및 추출</button><button class="px-4 py-2.5 bg-blue-600 text-white rounded-md font-bold text-sm">일괄 납부서 수임처 포털 개시</button></div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 flex-1 overflow-auto">
+          <table class="min-w-full divide-y divide-gray-200"><thead class="bg-slate-50"><tr><th class="px-4 py-3 text-left w-12"><input type="checkbox" checked class="rounded" /></th><th class="px-4 py-3 text-left text-xs font-bold text-slate-700">수임처명</th><th class="px-4 py-3 text-center text-xs font-bold text-slate-700">일괄 신고/납부서 상태</th><th class="px-4 py-3 text-center text-xs font-bold text-blue-700">납부서 첨부 여부</th></tr></thead><tbody class="divide-y divide-gray-100">${clients.map(c => `<tr><td class="px-4 py-3"><input type="checkbox" checked class="rounded" /></td><td class="px-4 py-3 font-bold text-sm">${c.name}</td><td class="px-4 py-3 text-center"><span class="px-2 py-1 rounded text-xs font-bold bg-emerald-100 text-emerald-800">납부서개시완료</span></td><td class="px-4 py-3 text-center font-bold text-blue-600"><div class="flex justify-center items-center gap-1"><i data-lucide="receipt" class="w-4 h-4"></i> 개시됨</div></td></tr>`).join('')}</tbody></table>
+        </div>
+      </div>
+    `);
+
+    const screenClientBoard = wrapClient(`
+      <div class="flex justify-between items-end mb-4">
+        <div><h2 class="text-2xl font-bold text-gray-900">월별 급여 및 세무 업무 게시판</h2><p class="text-gray-600 mt-1">과거부터 현재까지의 매월 급여대장 및 세금 납부서 기록을 게시판 형태로 관리합니다.</p></div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200 text-center"><thead class="bg-gray-50"><tr><th class="px-6 py-4 text-sm font-bold text-gray-600">귀속 연월</th><th class="px-6 py-4 text-sm font-bold text-gray-600">1. 기초 급여자료 제출</th><th class="px-6 py-4 text-sm font-bold text-gray-600">2. 확정 급여대장 승인</th><th class="px-6 py-4 text-sm font-bold text-gray-600">3. 세금 납부서 확인</th><th class="px-6 py-4 text-sm font-bold text-gray-600">업무 진행</th></tr></thead><tbody class="divide-y divide-gray-100">
+          ${portalRecords.map(r => `<tr class="hover:bg-blue-50 transition-colors"><td class="px-6 py-4 font-bold text-gray-900 text-lg">${r.month}</td><td class="px-6 py-4"><span class="px-3 py-1.5 rounded-full text-xs font-bold ${r.isSubmitted ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${r.isSubmitted ? '제출완료' : '제출요망'}</span></td><td class="px-6 py-4"><span class="px-3 py-1.5 rounded-full text-xs font-bold ${r.isApproved ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}">${r.isApproved ? '승인완료' : '대기중'}</span></td><td class="px-6 py-4"><span class="px-3 py-1.5 rounded-full text-xs font-bold ${r.hasReceipt ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-500'}">${r.hasReceipt ? '개시완료' : '미개시'}</span></td><td class="px-6 py-4"><button class="px-5 py-2.5 bg-slate-800 text-white rounded font-bold text-sm">상세보기 및 업무진행</button></td></tr>`).join('')}
+        </tbody></table>
+      </div>
+    `);
+
+    const wrapClientDetail = (tabName, content) => wrapClient(`
+      <div class="flex justify-between items-end mb-2">
+        <div class="flex items-center gap-4"><button class="px-4 py-2 bg-white border border-gray-300 rounded font-bold text-gray-700 flex items-center gap-1"><i data-lucide="chevron-left" class="w-4 h-4"></i> 목록으로 돌아가기</button><h2 class="text-2xl font-bold text-gray-900">2026년 04월 업무 상세</h2></div>
+      </div>
+      <div class="flex gap-2 border-b border-gray-200">
+        <button class="px-5 py-3 font-bold text-sm rounded-t-lg ${tabName === 'step1' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500'}">1. 기초 급여자료 제출</button>
+        <button class="px-5 py-3 font-bold text-sm rounded-t-lg ${tabName === 'step2' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500'}">2. 확정 급여대장 승인</button>
+        <button class="px-5 py-3 font-bold text-sm rounded-t-lg ${tabName === 'step3' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500'}">3. 세금 납부서 확인</button>
+        <button class="px-5 py-3 font-bold text-sm rounded-t-lg ${tabName === 'step4' ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-500'}">4. 임직원 급여 이체 관리</button>
+      </div>
+      ${content}
+    `);
+
+    const clientStep1 = wrapClientDetail('step1', `
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="p-6 border-b border-gray-100 bg-blue-50 flex justify-between items-center">
+          <div><h2 class="text-lg font-bold text-blue-900">급여대장 확인 및 제출</h2><p class="text-sm text-blue-700 mt-1">세무대리인이 작성한 초안을 확인해주세요.</p></div>
+          <span class="px-3 py-1 rounded-full text-sm font-bold bg-amber-100 text-amber-700">확인/제출요망</span>
+        </div>
+        <div class="p-8 flex gap-6">
+          <div class="flex-1 bg-gray-50 border border-gray-200 rounded-lg p-6 flex flex-col justify-between">
+            <div class="text-center mb-6"><i data-lucide="download" class="w-10 h-10 text-blue-500 mx-auto mb-3"></i><p class="font-bold text-gray-800 mb-1">1차 작성 초안</p><p class="text-xs text-gray-500 mb-4">자동 스크래핑된 건보료 등 반영</p><button class="w-full py-2 bg-white border border-blue-300 text-blue-600 rounded font-bold">202604_급여초안_픽셀.xlsx</button></div>
+            <div class="border-t border-gray-200 pt-5"><p class="text-sm font-bold text-gray-700 mb-3 text-center">내역에 이상이 없으신가요?</p><button class="w-full py-3 rounded font-bold text-white bg-blue-600">초안 내용으로 즉시 확인 및 제출</button></div>
+          </div>
+          <div class="flex items-center flex-col justify-center"><div class="w-px h-16 bg-gray-200"></div><span class="text-gray-400 font-bold bg-white px-3 py-1 text-sm rounded-full border border-gray-200 my-2">또는</span><div class="w-px h-16 bg-gray-200"></div></div>
+          <div class="flex-1 bg-gray-50 border border-gray-200 rounded-lg p-6 flex flex-col justify-between">
+            <div class="text-center mb-6"><i data-lucide="upload-cloud" class="w-10 h-10 mx-auto mb-3 text-slate-600"></i><p class="font-bold text-gray-800 mb-1">수정본 엑셀 업로드</p><p class="text-xs text-gray-500 mb-4">수정이 필요한 경우 파일을 업로드합니다.</p></div>
+            <div class="border-t border-gray-200 pt-5"><p class="text-sm font-bold text-gray-700 mb-3 text-center">수정된 사항이 있으신가요?</p><button class="w-full py-3 rounded font-bold text-white bg-slate-800">수정된 엑셀 업로드 및 제출</button></div>
+          </div>
+        </div>
+      </div>
+    `);
+
+    const clientStep4 = wrapClientDetail('step4', `
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col flex-1 overflow-hidden h-[600px]">
+        <div class="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+          <div><h2 class="text-xl font-bold text-gray-900">초정밀 임직원 급여 내역 확인 및 이체</h2><p class="text-sm text-gray-500 mt-1">상세 급여 항목을 검증하고 이체용 엑셀을 추출합니다.</p></div>
+          <button class="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded font-bold text-sm flex gap-2 items-center"><i data-lucide="download" class="w-4 h-4"></i> 은행 일괄 이체용 엑셀 추출</button>
+        </div>
+        <div class="p-6 border-b border-gray-200 bg-white"><div class="grid grid-cols-4 gap-6"><div><p class="text-xs text-gray-500 font-bold mb-1">총 인원</p><p class="text-2xl font-bold text-slate-800">5명</p></div><div><p class="text-xs text-gray-500 font-bold mb-1">총 지급액 합계</p><p class="text-2xl font-bold text-blue-700">19,500,000원</p></div><div><p class="text-xs text-gray-500 font-bold mb-1">총 공제액 합계</p><p class="text-2xl font-bold text-red-600">-1,820,000원</p></div><div class="pl-6 border-l-2 border-emerald-500"><p class="text-xs text-emerald-600 font-bold mb-1">실지급액 (이체필요금액)</p><p class="text-2xl font-bold text-emerald-700">17,680,000원</p></div></div></div>
+        <div class="overflow-x-auto flex-1 bg-white">
+          <table class="min-w-max w-full divide-y divide-gray-200 whitespace-nowrap text-xs"><thead class="bg-slate-100 sticky top-0"><tr><th class="px-3 py-3 text-left font-bold text-gray-600">사번/부서</th><th class="px-3 py-3 text-left font-bold text-gray-600">성명</th><th class="px-3 py-3 text-right font-bold text-gray-600 bg-blue-50">기본급</th><th class="px-3 py-3 text-right font-bold text-blue-800 bg-blue-100">지급총액</th><th class="px-3 py-3 text-right font-bold text-gray-600 bg-red-50">국민연금</th><th class="px-3 py-3 text-right font-bold text-gray-600 bg-red-50">건강보험</th><th class="px-3 py-3 text-right font-bold text-red-800 bg-red-100">공제총액</th><th class="px-3 py-3 text-right font-bold text-emerald-800 bg-emerald-50">차인지급액</th></tr></thead>
+          <tbody class="divide-y divide-gray-200">${clientEmployees.map(emp => `<tr><td class="px-3 py-3 border-r font-bold">${emp.name}</td><td class="px-3 py-3 font-bold border-r">${emp.dept}</td><td class="px-3 py-3 text-right">${formatCurrency(emp.basePay)}</td><td class="px-3 py-3 text-right font-bold text-blue-700 bg-blue-50/30">${formatCurrency(emp.basePay + 200000)}</td><td class="px-3 py-3 text-right text-red-500">${formatCurrency(emp.natPen)}</td><td class="px-3 py-3 text-right text-red-500">${formatCurrency(emp.hlthIns)}</td><td class="px-3 py-3 text-right font-bold text-red-600 bg-red-50/30">-</td><td class="px-3 py-3 text-right font-bold text-emerald-700 bg-emerald-50/50">-</td></tr>`).join('')}</tbody></table>
+        </div>
+      </div>
+    `);
+
+    // --- DRAW CANVAS RENDERER ---
+    function drawCanvas() {
+      const container = document.getElementById('flow-container');
+
+      const buildRow = (title, items) => {
+        let rowHtml = `<div class="mb-8"><h2 class="text-3xl font-extrabold text-slate-700 pl-4 border-l-8 border-blue-500">${title}</h2></div><div class="flex gap-20 items-center justify-start">`;
+
+        items.forEach((item, index) => {
+          rowHtml += createFrame(item.title, item.desc, item.html, item.overlay);
+          if (index < items.length - 1) rowHtml += createArrow();
+        });
+
+        rowHtml += `</div>`;
+        return rowHtml;
+      };
+
+      let output = '';
+
+      // ROW 1
+      output += buildRow('온보딩 및 초기 설정', [
+        { title: '1. 세무대리인 로그인', desc: '시스템 진입', html: screenLogin },
+        { title: '2. 세무대리인 회원가입', desc: '초기 세팅', html: screenSignup }
+      ]);
+      output += createDownArrow('이후 세무대리인 전용 업무 시작');
+
+      // ROW 2
+      output += buildRow('세무대리인 기초 업무 자동화', [
+        { title: '3. 수임처 일괄 관리', desc: '위하고 연동 및 계정 생성', html: screenClients },
+        { title: '4. 원천징수 일괄 자료요청', desc: '수임처 선택 후 자동 요청/스크래핑', html: screenWithholding },
+        { title: '4-1. [진행중 모달]', desc: '스크래핑 자동 대사 시뮬레이션', html: screenWithholding, overlay: overlayScraping },
+        { title: '4-2. [수동 검토 모달]', desc: '예외(고객 수정) 발생 건 리뷰', html: screenWithholding, overlay: overlayReview }
+      ]);
+      output += createDownArrow('위하고 최종 업로드 후 수임처 포털로 전달');
+
+      // ROW 3
+      output += buildRow('수임처(고객사) 전용 소통 포털 (Client Portal)', [
+        { title: '5. 수임처 메인 게시판', desc: '월별 업무 진척도 아카이브', html: screenClientBoard },
+        { title: '6. 기초 자료 제출 듀얼 패스', desc: '이상 없음 즉시확인 OR 수정 엑셀 업로드', html: clientStep1 },
+        { title: '7. 임직원 급여 내역 확인', desc: '세분화된 급여 데이터 및 이체용 엑셀 다운', html: clientStep4 }
+      ]);
+      output += createDownArrow('수임처 최종 승인 후 세무대리인 마감 업무');
+
+      // ROW 4
+      output += buildRow('세무대리인 최종 마감 및 신고', [
+        { title: '8. 확정 급여대장 관리', desc: '위하고에서 최종 DB 다운로드 및 일괄 전송', html: screenPayroll },
+        { title: '9. 신고 및 납부서 일괄 개시', desc: '홈택스 자동신고 및 납부서 고객사 개시', html: screenTaxReport }
+      ]);
+
+      container.innerHTML = output;
+      lucide.createIcons();
+    }
+
+    // Initialize
+    drawCanvas();
+
+    // Canvas dragging logic
+    const canvas = document.getElementById('figma-canvas');
+    let isDown = false;
+    let startX;
+    let startY;
+    let scrollLeft;
+    let scrollTop;
+
+    canvas.addEventListener('mousedown', (e) => {
+      isDown = true;
+      startX = e.pageX - canvas.offsetLeft;
+      startY = e.pageY - canvas.offsetTop;
+      scrollLeft = canvas.scrollLeft;
+      scrollTop = canvas.scrollTop;
+    });
+    canvas.addEventListener('mouseleave', () => { isDown = false; });
+    canvas.addEventListener('mouseup', () => { isDown = false; });
+    canvas.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - canvas.offsetLeft;
+      const y = e.pageY - canvas.offsetTop;
+      const walkX = (x - startX) * 2;
+      const walkY = (y - startY) * 2;
+      canvas.scrollLeft = scrollLeft - walkX;
+      canvas.scrollTop = scrollTop - walkY;
+    });
+
+  </script>
+</body>
+
+</html>
