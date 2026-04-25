@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>쉽다쉬워 투자제안서 - B2B 세무·법무 초자동화 플랫폼</title>
+    <link rel="icon" href="data:,">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        html,
+        body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-snap-type: y mandatory;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8fafc;
+            word-break: keep-all;
+        }
+
+        .slide {
+            width: 100%;
+            min-height: 100svh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: clamp(2rem, 5vw, 5.5rem) clamp(1.25rem, 6vw, 7.5rem);
+            border-bottom: 1px solid #e2e8f0;
+            background: white;
+            position: relative;
+            overflow: hidden;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+        }
+
+        .aspect-ratio-box {
+            position: relative;
+            width: 100%;
+            max-width: min(1540px, 100%);
+            margin: 0 auto;
+        }
+
+        .slide h1,
+        .slide h2,
+        .slide h3,
+        .slide h4,
+        .slide p,
+        .slide li,
+        .slide span {
+            overflow-wrap: break-word;
+        }
+
+        .slide h1,
+        .slide h2,
+        .balanced-text {
+            text-wrap: balance;
+        }
+
+        .value-card {
+            padding: clamp(2rem, 4vw, 4.5rem);
+        }
+
+        .value-quote {
+            font-size: clamp(2rem, 3.18vw, 3.7rem);
+            line-height: 1.15;
+            letter-spacing: -0.01em;
+        }
+
+        .value-quote .quote-line {
+            display: block;
+        }
+
+        .no-break {
+            white-space: nowrap;
+        }
+
+        .slide p.text-xs,
+        .slide p.text-sm,
+        .slide li .text-xs,
+        .slide li .text-sm {
+            font-size: clamp(0.9rem, 0.9vw, 1rem) !important;
+            line-height: 1.55 !important;
+        }
+
+        .page-dots {
+            position: fixed;
+            right: 1.15rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 40;
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+            padding: 0.35rem;
+        }
+
+        .page-dot {
+            width: 0.32rem;
+            height: 0.32rem;
+            border-radius: 9999px;
+            background: rgba(37, 99, 235, 0.22);
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .page-dot.is-active {
+            background: rgba(37, 99, 235, 0.95);
+            transform: scale(1.55);
+        }
+
+        .market-card {
+            background: rgba(15, 23, 42, 0.72);
+            border: 1px solid rgba(96, 165, 250, 0.26);
+            border-radius: 1.25rem;
+            padding: clamp(1rem, 2vw, 1.75rem);
+        }
+
+        .market-bar {
+            position: relative;
+            height: 0.72rem;
+            border-radius: 9999px;
+            overflow: hidden;
+            background: rgba(51, 65, 85, 0.9);
+        }
+
+        .market-bar-fill {
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #60a5fa, #2563eb);
+        }
+
+        .market-path {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.75rem;
+        }
+
+        .market-path-item {
+            border-radius: 1rem;
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            background: rgba(30, 41, 59, 0.72);
+            padding: 1rem;
+        }
+
+        @media (max-width: 767px) {
+            .slide {
+                min-height: auto;
+                padding-top: 2.5rem;
+                padding-bottom: 2.5rem;
+            }
+
+            .value-card {
+                padding: 1.5rem;
+                border-left-width: 6px;
+                border-radius: 1.25rem;
+            }
+
+            .value-quote {
+                font-size: clamp(1.85rem, 8vw, 2.5rem);
+                line-height: 1.18;
+            }
+
+            .value-quote .quote-line {
+                display: block;
+            }
+
+            .page-dots {
+                right: 0.55rem;
+                gap: 0.35rem;
+            }
+
+            .page-dot {
+                width: 0.28rem;
+                height: 0.28rem;
+            }
+
+            .market-path {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (orientation: landscape) and (max-height: 620px) {
+            .slide {
+                min-height: auto;
+                padding-top: 1.5rem;
+                padding-bottom: 1.5rem;
+                overflow: visible;
+            }
+        }
+
+        @media print {
+            @page {
+                size: 16in 9in;
+                margin: 0;
+            }
+
+            body {
+                background: white;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .page-dots {
+                display: none !important;
+            }
+
+            .slide {
+                width: 16in;
+                height: 9in;
+                min-height: 9in;
+                padding: 0.65in 1.05in;
+                page-break-after: always;
+                break-after: page;
+                border-bottom: 0;
+                overflow: hidden;
+            }
+
+            .aspect-ratio-box {
+                max-width: 100%;
+            }
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, #1e40af, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .highlight-card {
+            transition: transform 0.3s ease;
+        }
+
+        .highlight-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .number-circle {
+            width: 2.5rem;
+            height: 2.5rem;
+            background-color: #2563eb;
+            color: white;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: .8;
+                transform: scale(1.05);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 발표자료 래퍼 컨테이너 -->
+    <div id="presentation-container">
+
+        <!-- Slide 0: Cover (표지) -->
+        <section class="slide bg-slate-900 text-white flex items-center justify-center text-center relative">
+            <div
+                class="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0iIzMzMyIvPjwvc3ZnPg==')] opacity-30">
+            </div>
+            <div
+                class="absolute -top-[20%] -right-[10%] w-[300px] h-[300px] lg:w-[600px] lg:h-[600px] bg-blue-600 rounded-full mix-blend-multiply filter blur-[100px] opacity-30">
+            </div>
+            <div
+                class="absolute -bottom-[20%] -left-[10%] w-[300px] h-[300px] lg:w-[600px] lg:h-[600px] bg-blue-400 rounded-full mix-blend-multiply filter blur-[100px] opacity-30">
+            </div>
+
+            <div class="aspect-ratio-box z-10 px-4">
+                <p class="text-blue-400 font-bold tracking-[0.2em] md:tracking-[0.3em] mb-4 md:mb-6 text-sm md:text-lg">
+                    SERIES IR PITCH DECK</p>
+                <h1 class="text-6xl md:text-8xl font-black mb-6 md:mb-8 tracking-tight">쉽다쉬워</h1>
+                <div class="h-1 w-16 md:w-24 bg-blue-500 mx-auto mb-8 md:mb-10"></div>
+                <p class="text-xl md:text-3xl font-light text-slate-300 leading-snug mb-6">
+                    가장 복잡한 행정을 가장 거대한 비즈니스로,<br>
+                    <span class="text-white font-bold mt-2 inline-block">기업 데이터 통합 기반 B2B 초자동화 플랫폼</span>
+                </p>
+            </div>
+
+            <p
+                class="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-xs md:text-sm text-slate-500 tracking-widest">
+                정민규 대표</p>
+        </section>
+
+        <!-- Slide 1: Executive Summary -->
+        <section class="slide">
+            <div class="aspect-ratio-box">
+                <span class="text-blue-600 font-bold mb-2 block tracking-widest text-sm md:text-base">01. EXECUTIVE
+                    SUMMARY</span>
+                <h2 class="text-3xl md:text-4xl font-bold mb-8 md:mb-12">핵심 가치 제안 (Value Proposition)</h2>
+                <div
+                    class="value-card bg-gradient-to-br from-blue-50 to-slate-100 rounded-3xl border-l-8 border-blue-600 shadow-sm">
+                    <p class="value-quote balanced-text font-black text-slate-800">
+                        <span class="quote-line">"반복 업무를 <span class="text-blue-600">단 몇 번의 클릭</span>으로 끝내고,</span>
+                        <span class="quote-line">확보된 <span class="text-blue-600">기업 데이터</span>로 <span class="no-break">금융·결제</span> 시장을 장악하는</span>
+                        <span class="quote-line">B2B 인프라 플랫폼"</span>
+                    </p>
+                    <div class="mt-6 md:mt-8 pt-6 md:pt-8 border-t border-blue-200">
+                        <p class="text-lg md:text-2xl font-bold text-slate-700">
+                            단순한 업무 툴(Tool)이 아닙니다. <strong class="text-blue-600">데이터가 돈이 되는 길목</strong>을 선점합니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 2: Market Pain Points -->
+        <section class="slide bg-slate-50">
+            <div class="aspect-ratio-box">
+                <span class="text-blue-600 font-bold mb-2 block tracking-widest text-sm md:text-base">02. MARKET PAIN
+                    POINTS</span>
+                <h2 class="text-3xl md:text-4xl font-bold mb-8 md:mb-12">시장 당면 과제: 세무 대리인과 사업자의 구조적 비효율</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
+                    <!-- Pain Point 1 -->
+                    <div
+                        class="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-slate-200 relative overflow-hidden">
+                        <div
+                            class="absolute top-0 right-0 bg-red-500 text-white px-3 py-1 md:px-4 md:py-1 font-bold text-xs md:text-sm rounded-bl-xl">
+                            Pain Level: 극상</div>
+                        <h3 class="text-xl md:text-2xl font-black mb-4 md:mb-6 text-slate-800 mt-2">세무 대리인: "하루 종일 매달리는
+                            지옥"</h3>
+                        <ul class="space-y-4 md:space-y-5 text-base md:text-lg text-slate-700">
+                            <li class="flex items-start">
+                                <div class="w-2 h-2 bg-red-500 rounded-full mr-3 mt-2 flex-shrink-0"></div>
+                                <div><strong>수기 입력의 늪:</strong> 카톡/메일로 받은 엑셀 자료를 위하고(Wehago) 등에 <span
+                                        class="bg-red-100 font-bold text-red-600 px-1">일일이 타이핑하며 막대한 시간 낭비.</span></div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="w-2 h-2 bg-red-500 rounded-full mr-3 mt-2 flex-shrink-0"></div>
+                                <div><strong>수익성 악화:</strong> 직원 1인당 관리 수임처의 물리적 한계 도달. 인건비는 오르나 기장료는 동결되어 비용 부담 극대화.
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="w-2 h-2 bg-red-500 rounded-full mr-3 mt-2 flex-shrink-0"></div>
+                                <div><strong>파편화된 프로세스:</strong> [자료요청 → 취합 → 등록 → 신고 → 납부서 전달]의 과정에서 끝없는 전화 통화와 리소스 낭비.
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- Pain Point 2 -->
+                    <div class="bg-white p-8 md:p-10 rounded-3xl shadow-sm border border-slate-200">
+                        <h3 class="text-xl md:text-2xl font-black mb-4 md:mb-6 text-slate-800">기업 / 사업자: "단절된 데이터의 위험"
+                        </h3>
+                        <ul class="space-y-4 md:space-y-5 text-base md:text-lg text-slate-700">
+                            <li class="flex items-start">
+                                <div class="w-2 h-2 bg-orange-500 rounded-full mr-3 mt-2 flex-shrink-0"></div>
+                                <div><strong>소통의 비대칭성:</strong> 세무대리인의 요구 양식에 맞춰 매달 엑셀 데이터를 가공하여 송부해야 하는 행정적 부담.</div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="w-2 h-2 bg-orange-500 rounded-full mr-3 mt-2 flex-shrink-0"></div>
+                                <div><strong>가산세 리스크:</strong> 상호 소통 누락 및 수기 입력 과정의 휴먼 에러(Human Error)로 인한 세무 신고 오류.
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="w-2 h-2 bg-orange-500 rounded-full mr-3 mt-2 flex-shrink-0"></div>
+                                <div><strong>재무 가시성 부재:</strong> 기업의 재무 및 4대 보험 상태를 실시간으로 모니터링할 수 있는 대시보드 부재.</div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 3: Our Solution -->
+        <section class="slide">
+            <div class="aspect-ratio-box">
+                <span class="text-blue-600 font-bold mb-2 block tracking-widest text-sm md:text-base">03. OUR
+                    SOLUTION</span>
+                <h2 class="text-3xl md:text-4xl font-bold mb-8 md:mb-10">핵심 해결책: 하루 종일 걸리던 업무 ➔ <span
+                        class="text-blue-600 bg-blue-50 px-2 rounded">단 몇 번의 클릭</span>으로</h2>
+
+                <div
+                    class="flex flex-col lg:flex-row items-center justify-between bg-slate-900 p-6 md:p-8 rounded-3xl text-white mb-8 border border-slate-700 shadow-2xl">
+                    <!-- BEFORE -->
+                    <div
+                        class="w-full lg:w-1/3 text-center p-6 bg-slate-800 rounded-2xl border border-red-900/50 mb-4 lg:mb-0">
+                        <div class="text-red-400 font-bold mb-2 md:mb-4 text-lg md:text-xl">BEFORE (수기 업무)</div>
+                        <div class="hidden lg:flex h-12 items-center justify-center text-slate-500 font-bold mb-2">기존 처리
+                            방식</div>
+                        <p class="text-base md:text-lg text-slate-300">자료 취합 ➔ 검증 ➔ 수기입력 ➔ 신고</p>
+                        <div
+                            class="mt-4 inline-block bg-red-500/20 text-red-300 px-4 py-2 rounded-full font-bold text-sm md:text-base">
+                            소요시간: 하루 종일 (8h+)</div>
+                    </div>
+
+                    <div
+                        class="text-3xl md:text-4xl text-blue-500 font-black my-4 lg:my-0 transform rotate-90 lg:rotate-0">
+                        ➔</div>
+
+                    <!-- AFTER -->
+                    <div
+                        class="w-full lg:w-1/2 text-center p-6 md:p-8 bg-blue-900 rounded-2xl border border-blue-400 relative overflow-hidden pulse-animation">
+                        <div
+                            class="absolute top-0 right-0 bg-blue-500 text-white px-2 py-1 md:px-3 md:py-1 font-bold text-xs md:text-sm rounded-bl-lg">
+                            쉽다쉬워 초자동화</div>
+                        <div class="text-blue-200 font-bold mb-2 md:mb-4 text-xl md:text-2xl">AFTER (원클릭 혁명)</div>
+                        <div class="hidden lg:flex h-12 items-center justify-center text-blue-300 font-bold mb-2">통합 연동
+                            프로세스</div>
+                        <p class="text-lg md:text-xl font-bold text-white mb-2">자동 스크래핑 ➔ 엔진 자동검증 ➔ 신고 완료</p>
+                        <div
+                            class="mt-4 inline-block bg-blue-500 text-white px-4 py-2 md:px-6 md:py-3 rounded-full text-base md:text-xl font-black shadow-lg">
+                            소요시간: 단 몇 번의 클릭</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                    <div class="border border-blue-100 bg-blue-50 p-5 md:p-6 rounded-2xl">
+                        <h4 class="font-bold text-base md:text-lg mb-2 text-blue-800"><span class="mr-2">✓</span>원천세/지방세
+                            원클릭 자동화</h4>
+                        <p class="text-xs md:text-sm text-slate-600">일괄 자료 요청부터 위하고 자동 업로드, 홈택스 신고까지 클릭 몇 번으로 프로세스 완결.
+                        </p>
+                    </div>
+                    <div class="border border-blue-100 bg-blue-50 p-5 md:p-6 rounded-2xl">
+                        <h4 class="font-bold text-base md:text-lg mb-2 text-blue-800"><span class="mr-2">✓</span>CMS 통장
+                            원장 대사</h4>
+                        <p class="text-xs md:text-sm text-slate-600">대량의 통장내역을 1분 이내에 CMS 데이터와 자동 매핑 및 검증 (정확도 99.9%).
+                        </p>
+                    </div>
+                    <div class="border border-blue-100 bg-blue-50 p-5 md:p-6 rounded-2xl">
+                        <h4 class="font-bold text-base md:text-lg mb-2 text-blue-800"><span class="mr-2">✓</span>4대보험
+                            스크래핑</h4>
+                        <p class="text-xs md:text-sm text-slate-600">건강보험공단 등 국가망 보안 스크래핑으로 급여대장 실시간 자동 반영 시스템 구축.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 4: Target Market Size -->
+        <section class="slide bg-slate-900 text-white">
+            <div class="aspect-ratio-box">
+                <span class="text-blue-400 font-bold mb-2 block tracking-widest text-sm md:text-base">04. TARGET MARKET
+                    SIZE</span>
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">목표 시장: 세무 전문가 네트워크가 여는 B2B 데이터 인프라</h2>
+                <p class="text-slate-300 text-base md:text-xl mb-8 md:mb-10 max-w-5xl">
+                    쉽다쉬워는 세무대리인의 반복 업무 자동화를 진입점으로 삼아, 수임처 기업의 재무·인사·납부 데이터를 연결하는 운영 인프라를 구축합니다.
+                </p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+                    <div class="market-card">
+                        <p class="text-slate-400 mb-2 text-sm md:text-base">1차 도입 채널</p>
+                        <p class="text-4xl md:text-6xl font-black text-white">약 <span class="counter market-counter"
+                                data-target="15000">0</span><span class="text-xl md:text-3xl text-blue-400">명</span></p>
+                        <p class="text-slate-400 mt-3 text-sm md:text-base">국내 개업 세무사 및 세무법인 실무 조직</p>
+                        <div class="market-bar mt-5">
+                            <div class="market-bar-fill w-[36%]"></div>
+                        </div>
+                    </div>
+                    <div class="market-card border-blue-500/60">
+                        <p class="text-slate-400 mb-2 text-sm md:text-base">잠재 최종 고객</p>
+                        <p class="text-4xl md:text-6xl font-black text-white">약 <span class="counter market-counter"
+                                data-target="800">0</span>만<span class="text-xl md:text-3xl text-blue-400">개</span></p>
+                        <p class="text-slate-400 mt-3 text-sm md:text-base">중소기업·소상공인 기반 실질 TAM</p>
+                        <div class="market-bar mt-5">
+                            <div class="market-bar-fill w-full"></div>
+                        </div>
+                    </div>
+                    <div class="market-card">
+                        <p class="text-slate-400 mb-2 text-sm md:text-base">데이터 기반 확장성</p>
+                        <p class="text-4xl md:text-6xl font-black text-blue-400"><span class="counter market-counter"
+                                data-target="100">0</span><span class="text-xl md:text-3xl">조원+</span></p>
+                        <p class="text-slate-400 mt-3 text-sm md:text-base">납부·급여·정산 흐름 기반 연간 TPV 잠재력</p>
+                        <div class="market-bar mt-5">
+                            <div class="market-bar-fill w-[72%]"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/90 rounded-2xl p-5 md:p-7 border border-slate-700">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5 mb-5">
+                        <div>
+                            <h4 class="text-xl md:text-2xl font-bold mb-2 text-blue-300">시장 침투 구조: 세무사 1명 → 수임처 수백 개</h4>
+                            <p class="text-slate-300 text-sm md:text-base">
+                                기존 원장 시스템과 경쟁하지 않고, 그 위에서 세무사와 사업자를 연결하는 업무·데이터 프론트엔드 OS로 포지셔닝합니다.
+                            </p>
+                        </div>
+                        <div class="text-left lg:text-right">
+                            <p class="text-slate-400 text-sm md:text-base">핵심 레버리지</p>
+                            <p class="text-2xl md:text-3xl font-black text-white">B2B2B 확산 모델</p>
+                        </div>
+                    </div>
+
+                    <div class="market-path">
+                        <div class="market-path-item">
+                            <p class="text-blue-300 font-black text-lg mb-2">01. 업무 자동화</p>
+                            <p class="text-slate-300 text-sm md:text-base">원천세·4대보험·자료 요청 등 반복 업무를 먼저 장악해 세무사 도입 명분을 만듭니다.</p>
+                        </div>
+                        <div class="market-path-item">
+                            <p class="text-blue-300 font-black text-lg mb-2">02. 기업 데이터 록인</p>
+                            <p class="text-slate-300 text-sm md:text-base">수임처의 납부·급여·증빙 데이터를 계정 단위로 축적해 전환 비용을 높입니다.</p>
+                        </div>
+                        <div class="market-path-item">
+                            <p class="text-blue-300 font-black text-lg mb-2">03. 금융·결제 확장</p>
+                            <p class="text-slate-300 text-sm md:text-base">검증된 기업 데이터를 기반으로 대출, 보험, B2B 결제, 정산 수익으로 확장합니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 5: Revenue Model -->
+        <section class="slide">
+            <div class="aspect-ratio-box">
+                <span class="text-blue-600 font-bold mb-2 block tracking-widest text-sm md:text-base">05. REVENUE
+                    MODEL</span>
+                <h2 class="text-3xl md:text-4xl font-bold mb-8 md:mb-12">수익 창출 구조: 플랫폼 참여자 전원이 지불하는 다각화된 3각 BM</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                    <!-- BM 1 -->
+                    <div class="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-lg highlight-card">
+                        <div class="number-circle">1</div>
+                        <h3 class="text-xl md:text-2xl font-black mb-2 text-slate-800">세무 대리인 (B2B SaaS)</h3>
+                        <p class="font-bold text-blue-600 mb-4 text-sm md:text-base">월 구독료 + 계정 종량제</p>
+                        <div
+                            class="bg-slate-50 p-4 rounded-xl mb-4 text-xs md:text-sm text-slate-600 space-y-2 h-auto md:h-28">
+                            <p>• <strong>하루 종일 걸리던 업무를 축소</strong>시켜 압도적인 인건비 절감 효과 제공</p>
+                            <p>• 관리 수임처 계정 볼륨에 따른 Tier별 과금</p>
+                        </div>
+                        <p class="text-xs text-slate-400 font-bold">💡 "직원 1명 채용 비용을 획기적으로 낮춥니다."</p>
+                    </div>
+
+                    <!-- BM 2 -->
+                    <div
+                        class="bg-white p-6 md:p-8 rounded-3xl border border-blue-600 shadow-[0_10px_30px_rgba(37,99,235,0.15)] highlight-card transform md:scale-105 z-10">
+                        <div class="number-circle bg-blue-800">2</div>
+                        <h3 class="text-xl md:text-2xl font-black mb-2 text-slate-800">사업자/기업 (Transaction)</h3>
+                        <p class="font-bold text-blue-800 mb-4 text-sm md:text-base">행정 건당 수수료 (Pay-per-use)</p>
+                        <div
+                            class="bg-blue-50 p-4 rounded-xl mb-4 text-xs md:text-sm text-slate-700 space-y-2 h-auto md:h-28">
+                            <p>• <strong>법인설립 전자등기 (개발 완료)</strong></p>
+                            <p>• 사업자등록, 상표권, CMS 신청서 생성 대행</p>
+                            <p>• 각종 법무/세무 증명서 즉시 발급 과금</p>
+                        </div>
+                        <p class="text-xs text-blue-600 font-bold">💡 "복잡한 법률 서류 작업을 위임하는 편의성 비용입니다."</p>
+                    </div>
+
+                    <!-- BM 3 -->
+                    <div class="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-lg highlight-card">
+                        <div class="number-circle">3</div>
+                        <h3 class="text-xl md:text-2xl font-black mb-2 text-slate-800">데이터 확장 (Expansion)</h3>
+                        <p class="font-bold text-blue-600 mb-4 text-sm md:text-base">제휴 및 금융 중개 수수료</p>
+                        <div
+                            class="bg-slate-50 p-4 rounded-xl mb-4 text-xs md:text-sm text-slate-600 space-y-2 h-auto md:h-28">
+                            <p>• <strong>수집된 기업 데이터</strong>를 활용한 맞춤형 대출/보험 상품 큐레이션</p>
+                            <p>• 신규 사업자 ↔ 최적의 세무사 수임 매칭</p>
+                        </div>
+                        <p class="text-xs text-slate-400 font-bold">💡 "무결성 기업 DB가 거대한 마케팅/금융 수익이 됩니다."</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 6: Growth Strategy -->
+        <section class="slide bg-blue-50">
+            <div class="aspect-ratio-box">
+                <span class="text-blue-600 font-bold mb-2 block tracking-widest text-sm md:text-base">06. GROWTH
+                    STRATEGY</span>
+                <h2 class="text-3xl md:text-4xl font-bold mb-6 md:mb-10">고객 확보 전략: 마케팅 비용 '0원'의 데이터 플라이휠</h2>
+                <p class="text-base md:text-xl text-slate-600 mb-8 md:mb-12">개별 사업자를 향한 소모적 마케팅을 지양합니다. 클릭 한 번으로 세무사의
+                    수임처 DB가 통째로 흡수됩니다.</p>
+
+                <div class="flex flex-col lg:flex-row items-center">
+                    <!-- Left: Process -->
+                    <div class="w-full lg:w-1/2 lg:pr-12 relative lg:border-r-2 border-blue-200 mb-8 lg:mb-0">
+                        <div class="space-y-6 md:space-y-8">
+                            <div class="relative pl-8 lg:pl-0">
+                                <div
+                                    class="absolute left-0 lg:-left-[45px] top-1 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                                    1</div>
+                                <h4 class="font-bold text-base md:text-lg text-slate-800">세무법인 영업 및 B2B SaaS 도입</h4>
+                                <p class="text-xs md:text-sm text-slate-600">세무사가 본인의 '반복 업무 제거'를 위해 시스템 자발적 도입</p>
+                            </div>
+                            <div class="relative pl-8 lg:pl-0">
+                                <div
+                                    class="absolute left-0 lg:-left-[45px] top-1 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                                    2</div>
+                                <h4 class="font-bold text-base md:text-lg text-blue-700">수임처(기업) DB 일괄 자동 동기화</h4>
+                                <p class="text-xs md:text-sm text-slate-600">기존 고객 명단 엑셀 업로드로 수백 개의 '사업자 전용 소통 계정' 즉시 생성
+                                </p>
+                            </div>
+                            <div class="relative pl-8 lg:pl-0">
+                                <div
+                                    class="absolute left-0 lg:-left-[45px] top-1 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                                    3</div>
+                                <h4 class="font-bold text-base md:text-lg text-slate-800">사업자 앱 설치 유도</h4>
+                                <p class="text-xs md:text-sm text-slate-600">사업자는 급여명세서 등록 및 납부서 수신을 위해 필수적으로 앱 설치</p>
+                            </div>
+                            <div class="relative pl-8 lg:pl-0">
+                                <div
+                                    class="absolute left-0 lg:-left-[45px] top-1 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                                    4</div>
+                                <h4 class="font-bold text-base md:text-lg text-blue-700">초대형 트래픽 기반 교차 판매 (Cross-sell)
+                                </h4>
+                                <p class="text-xs md:text-sm text-slate-600">확보된 기업 대표자 대상 법무/행정/금융 서비스 추가 과금</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Right: Visual -->
+                    <div class="w-full lg:w-1/2 lg:pl-12 flex flex-col items-center justify-center">
+                        <div
+                            class="bg-white w-full rounded-3xl p-6 md:p-8 shadow-lg text-center border-4 border-blue-600 relative mt-4 lg:mt-0">
+                            <div
+                                class="absolute -top-4 md:-top-5 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-1 md:px-6 rounded-full font-bold text-xs md:text-sm whitespace-nowrap">
+                                Network Effect (네트워크 효과)
+                            </div>
+                            <p class="text-sm md:text-base text-slate-500 mb-4 font-bold">고객 획득 비용(CAC)의 극단적 혁신</p>
+                            <div class="flex justify-center items-center space-x-2 md:space-x-6 mt-4 md:mt-6">
+                                <div class="text-center w-1/3 md:w-auto">
+                                    <div
+                                        class="text-sm md:text-xl font-black text-slate-800 bg-slate-100 px-2 py-3 md:px-6 md:py-4 rounded-xl mb-2 border border-slate-200">
+                                        TAX<br>PARTNER</div>
+                                    <p class="font-bold text-xs md:text-sm text-slate-500 mt-2">세무사 1명</p>
+                                </div>
+                                <div class="text-xl md:text-3xl text-blue-600 font-bold">➔</div>
+                                <div class="text-center w-1/3 md:w-auto">
+                                    <div
+                                        class="text-sm md:text-xl font-black text-blue-600 bg-blue-100 px-2 py-3 md:px-6 md:py-4 rounded-xl mb-2 border border-blue-200">
+                                        100+<br>CLIENTS</div>
+                                    <p class="font-bold text-xs md:text-sm text-blue-600 mt-2">사업자 200개 DB</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 7: Competitive Advantage -->
+        <section class="slide">
+            <div class="aspect-ratio-box">
+                <span class="text-blue-600 font-bold mb-2 block tracking-widest text-sm md:text-base">07. COMPETITIVE
+                    ADVANTAGE</span>
+                <h2 class="text-3xl md:text-4xl font-bold mb-8 md:mb-12">핵심 경쟁 우위: 기술적 장벽 및 폭발적 생산성 향상</h2>
+
+                <div
+                    class="bg-slate-800 rounded-3xl p-6 md:p-10 text-white mb-8 flex flex-col md:flex-row justify-between items-start md:items-center shadow-xl border-l-8 border-blue-500">
+                    <div class="mb-6 md:mb-0">
+                        <h3 class="text-xl md:text-2xl font-bold mb-2 text-blue-300">수임처 커버리지(생산성)의 400% 혁명</h3>
+                        <p class="text-sm md:text-base text-slate-400">클릭 자동화로 실무 직원 1명이 감당할 수 있는 기업 수가 폭발적으로 증가합니다.</p>
+                    </div>
+                    <div class="flex space-x-6 md:space-x-8 text-center w-full md:w-auto justify-center">
+                        <div>
+                            <p class="text-slate-400 text-xs md:text-sm mb-1">도입 전 (수기 작성)</p>
+                            <p class="text-2xl md:text-3xl font-bold text-slate-300">최대 50개</p>
+                        </div>
+                        <div class="text-3xl md:text-4xl text-blue-500 font-black">➔</div>
+                        <div>
+                            <p class="text-blue-300 text-xs md:text-sm mb-1">도입 후 (클릭 자동화)</p>
+                            <p class="text-3xl md:text-5xl font-black text-blue-400">200개 +</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                    <div class="p-5 md:p-6 border border-slate-200 rounded-2xl bg-white shadow-sm">
+                        <div class="text-blue-600 font-black text-xl md:text-2xl mb-3 md:mb-4">01.</div>
+                        <h4 class="font-bold text-base md:text-lg mb-2">AI 기반 무결성 검증</h4>
+                        <p class="text-xs md:text-sm text-slate-600">Naver Clova OCR을 활용한 신분증 스캔, 자동 인감 추출 등 휴먼 에러(Human
+                            Error) 0% 달성.</p>
+                    </div>
+                    <div class="p-5 md:p-6 border border-slate-200 rounded-2xl bg-white shadow-sm">
+                        <div class="text-blue-600 font-black text-xl md:text-2xl mb-3 md:mb-4">02.</div>
+                        <h4 class="font-bold text-base md:text-lg mb-2">코어망 직결 스크래핑</h4>
+                        <p class="text-xs md:text-sm text-slate-600">위하고(Wehago), 홈택스, 공단 등 흩어진 데이터를 API 및 보안 스크래핑으로 완벽히
+                            연결.</p>
+                    </div>
+                    <div class="p-5 md:p-6 border border-slate-200 rounded-2xl bg-white shadow-sm">
+                        <div class="text-blue-600 font-black text-xl md:text-2xl mb-3 md:mb-4">03.</div>
+                        <h4 class="font-bold text-base md:text-lg mb-2">Compliance (법적 안정성)</h4>
+                        <p class="text-xs md:text-sm text-slate-600">전문 자격사들의 업무를 돕는 'IT 보조 도구'로서의 지위를 명확히 하여 규제 리스크 차단.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 8: Traction & Milestone -->
+        <section class="slide bg-slate-900 text-white">
+            <div class="aspect-ratio-box">
+                <span class="text-blue-400 font-bold mb-2 block tracking-widest text-sm md:text-base">08.
+                    TRACTION</span>
+                <h2 class="text-3xl md:text-4xl font-bold mb-8 md:mb-12">현재 성과: 단순 기획을 넘어선 상용화 준비 시스템</h2>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8 md:mb-10">
+                    <div class="bg-slate-800 p-4 md:p-6 rounded-2xl text-center">
+                        <p class="text-slate-400 text-xs md:text-sm mb-1 md:mb-2">개발 완료 핵심 모듈</p>
+                        <p class="text-3xl md:text-4xl font-black text-blue-400">19<span
+                                class="text-sm md:text-lg">개+</span></p>
+                    </div>
+                    <div class="bg-slate-800 p-4 md:p-6 rounded-2xl text-center">
+                        <p class="text-slate-400 text-xs md:text-sm mb-1 md:mb-2">테스트 등록 업체 DB</p>
+                        <p class="text-3xl md:text-4xl font-black text-blue-400">186<span
+                                class="text-sm md:text-lg">개</span></p>
+                    </div>
+                    <div class="bg-slate-800 p-4 md:p-6 rounded-2xl text-center">
+                        <p class="text-slate-400 text-xs md:text-sm mb-1 md:mb-2">통장 대사 처리 속도</p>
+                        <p class="text-3xl md:text-4xl font-black text-blue-400">
+                            < 1<span class="text-sm md:text-lg">분</span>
+                        </p>
+                    </div>
+                    <div class="bg-slate-800 p-4 md:p-6 rounded-2xl text-center border border-blue-500">
+                        <p class="text-slate-400 text-xs md:text-sm mb-1 md:mb-2">현재 개발 단계</p>
+                        <p class="text-base md:text-xl font-black text-blue-400 mt-1 md:mt-2">상용화 테스트</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 rounded-3xl p-6 md:p-8 border border-slate-700">
+                    <h3 class="text-lg md:text-xl font-bold mb-4 md:mb-6 text-blue-300">구현 완료 주요 파이프라인 (척척플랫폼 기반)</h3>
+                    <div
+                        class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 md:gap-y-4 text-slate-300 text-xs md:text-sm">
+                        <div class="flex items-start"><span class="text-blue-400 font-bold mr-2">✓</span> <span>[공통]
+                                개인도장 전자 생성 / 법인인감 AI 자동 추출</span></div>
+                        <div class="flex items-start"><span class="text-blue-400 font-bold mr-2">✓</span> <span>[법무]
+                                법인설립 전자등기 신청서 5단계 자동화 패키지</span></div>
+                        <div class="flex items-start"><span class="text-blue-400 font-bold mr-2">✓</span> <span>[세무] CMS
+                                통장정리 매핑 / 사업자등록 통합신청</span></div>
+                        <div class="flex items-start"><span class="text-blue-400 font-bold mr-2">✓</span> <span>[세무]
+                                쿠팡/네이버 신용전표 엑셀 자동 변환 및 매핑</span></div>
+                        <div class="flex items-start"><span class="text-blue-400 font-bold mr-2">✓</span> <span>[관리]
+                                세무법인 조직 기반 척척업무관리 (칸반보드)</span></div>
+                        <div class="flex items-start"><span class="text-blue-400 font-bold mr-2">✓</span> <span>[DB]
+                                대리업체 관리 및 수임처 다이렉트 동기화 시스템</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 9: Scalability -->
+        <section class="slide">
+            <div class="aspect-ratio-box">
+                <span class="text-blue-600 font-bold mb-2 block tracking-widest text-sm md:text-base">09.
+                    SCALABILITY</span>
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">클릭으로 확보된 데이터, <span
+                        class="text-blue-600 inline-block">금융·결제 밸류체인 확장</span></h2>
+                <p class="text-base md:text-lg text-slate-600 mb-8 md:mb-12">단순 SaaS가 아닌, 800만 사업자의 재무/인사 데이터가 집결되는 B2B
+                    핀테크 허브로 진화합니다.</p>
+
+                <div class="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-6">
+                    <!-- Expansion 1 -->
+                    <div class="flex-1 bg-slate-50 p-6 md:p-8 rounded-3xl border border-slate-200">
+                        <div
+                            class="w-10 h-10 md:w-12 md:h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-black text-lg md:text-xl mb-4 md:mb-6">
+                            01</div>
+                        <h4 class="text-lg md:text-2xl font-bold mb-3 md:mb-4">대안신용평가 (CB)</h4>
+                        <p class="text-sm md:text-base text-slate-600 leading-relaxed">
+                            원천세·부가세 데이터를 통한 독자적 기업 대안신용평가 구축. 제1·2금융권 맞춤형 사업자 대출 중개로 고부가가치 리드 제네레이션(Lead Gen) 수익 창출.
+                        </p>
+                    </div>
+                    <!-- Expansion 2 -->
+                    <div class="flex-1 bg-slate-50 p-6 md:p-8 rounded-3xl border border-slate-200">
+                        <div
+                            class="w-10 h-10 md:w-12 md:h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-black text-lg md:text-xl mb-4 md:mb-6">
+                            02</div>
+                        <h4 class="text-lg md:text-2xl font-bold mb-3 md:mb-4">B2B 결제 및 정산</h4>
+                        <p class="text-sm md:text-base text-slate-600 leading-relaxed">
+                            세금계산서 발행과 동시에 자금 이체가 실행되는 B2B 전용 에스크로 결제 진입. 공급망 금융(SCF) 및 매출채권 선정산(Factoring) 비즈니스로 확장.
+                        </p>
+                    </div>
+                    <!-- Expansion 3 -->
+                    <div class="flex-1 bg-blue-600 p-6 md:p-8 rounded-3xl text-white shadow-lg transform lg:scale-105">
+                        <div
+                            class="w-10 h-10 md:w-12 md:h-12 bg-blue-800 text-white rounded-full flex items-center justify-center font-black text-lg md:text-xl mb-4 md:mb-6">
+                            03</div>
+                        <h4 class="text-lg md:text-2xl font-bold mb-3 md:mb-4">하이퍼 타겟팅 광고</h4>
+                        <p class="text-sm md:text-base text-blue-100 leading-relaxed">
+                            800만 사업자의 실매출 및 고용 지표 기반 초정밀 타겟팅 광고 플랫폼(Ad-Tech). 오피스 비품, 법인 차량, B2B SaaS 등 독점적 고단가 매체 전환.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 10: Investment & Use of Funds -->
+        <section class="slide bg-slate-50">
+            <div class="aspect-ratio-box">
+                <span class="text-blue-600 font-bold mb-2 block tracking-widest text-sm md:text-base">10. INVESTMENT &
+                    USE OF FUNDS</span>
+                <h2 class="text-3xl md:text-4xl font-bold mb-8 md:mb-12">투자 유치 및 자금 집행 계획</h2>
+
+                <div class="flex flex-col lg:flex-row space-y-8 lg:space-y-0 lg:space-x-12">
+                    <!-- Milestone -->
+                    <div class="w-full lg:w-1/2 bg-white p-6 md:p-10 rounded-3xl shadow-sm border border-slate-200">
+                        <h4 class="text-xl md:text-2xl font-bold mb-6 md:mb-8 text-slate-800">주요 마일스톤</h4>
+                        <div class="space-y-6 md:space-y-8 border-l-4 border-blue-100 pl-5 md:pl-6 relative">
+                            <div class="relative">
+                                <div
+                                    class="absolute -left-[26px] md:-left-[30px] top-1 w-4 h-4 md:w-5 md:h-5 bg-blue-600 rounded-full border-4 border-white">
+                                </div>
+                                <p class="font-bold text-blue-600 text-base md:text-lg">Step 1. (현재 ~ 2025.3Q)</p>
+                                <p class="text-slate-700 font-bold mt-1 text-sm md:text-base">코어(Core) 엔진 고도화 및 거점 확보
+                                </p>
+                                <p class="text-slate-500 text-xs md:text-sm mt-1">원클릭 자동화 모듈 완결, 초기 주요 파트너 세무법인 거점 확보 및
+                                    서비스 안정화</p>
+                            </div>
+                            <div class="relative">
+                                <div
+                                    class="absolute -left-[26px] md:-left-[30px] top-1 w-4 h-4 md:w-5 md:h-5 bg-slate-300 rounded-full border-4 border-white">
+                                </div>
+                                <p class="font-bold text-slate-500 text-base md:text-lg">Step 2. (2025.4Q ~ 2026.2Q)</p>
+                                <p class="text-slate-700 font-bold mt-1 text-sm md:text-base">사업자 앱 정식 출시 및 DB 록인</p>
+                                <p class="text-slate-500 text-xs md:text-sm mt-1">고객소통 모바일 앱 런칭, 세무사 레버리지를 통한 폭발적 사업자 DB
+                                    록인(Lock-in) 달성</p>
+                            </div>
+                            <div class="relative">
+                                <div
+                                    class="absolute -left-[26px] md:-left-[30px] top-1 w-4 h-4 md:w-5 md:h-5 bg-slate-300 rounded-full border-4 border-white">
+                                </div>
+                                <p class="font-bold text-slate-500 text-base md:text-lg">Step 3. (2026.3Q ~ )</p>
+                                <p class="text-slate-700 font-bold mt-1 text-sm md:text-base">데이터 비즈니스 본격 확장</p>
+                                <p class="text-slate-500 text-xs md:text-sm mt-1">대안 신용평가 연동 완료 및 B2B 금융/대출/결제 중개 솔루션 런칭
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Use of Funds -->
+                    <div class="w-full lg:w-1/2">
+                        <div
+                            class="bg-slate-900 text-white p-6 md:p-10 rounded-3xl h-full flex flex-col justify-between">
+                            <div>
+                                <h4 class="text-xl md:text-2xl font-bold mb-6 md:mb-8">자금 운용 계획</h4>
+                                <div class="space-y-5 md:space-y-6">
+                                    <div>
+                                        <div class="flex justify-between mb-2">
+                                            <span class="font-bold text-xs md:text-sm">R&D (엔진 및 AI 추출 고도화)</span>
+                                            <span class="font-bold text-blue-400 text-xs md:text-sm">50%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-700 h-2 md:h-3 rounded-full overflow-hidden">
+                                            <div class="bg-blue-500 h-full w-1/2"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between mb-2">
+                                            <span class="font-bold text-xs md:text-sm">Sales & Marketing (오프라인
+                                                영업망)</span>
+                                            <span class="font-bold text-blue-400 text-xs md:text-sm">30%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-700 h-2 md:h-3 rounded-full overflow-hidden">
+                                            <div class="bg-blue-500 h-full w-[30%]"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between mb-2">
+                                            <span class="font-bold text-xs md:text-sm">Operations (법무/보안/제휴 컨설팅)</span>
+                                            <span class="font-bold text-blue-400 text-xs md:text-sm">20%</span>
+                                        </div>
+                                        <div class="w-full bg-slate-700 h-2 md:h-3 rounded-full overflow-hidden">
+                                            <div class="bg-blue-500 h-full w-[20%]"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                class="mt-6 md:mt-8 p-3 md:p-4 bg-slate-800 rounded-xl border border-slate-700 text-xs md:text-sm text-slate-300">
+                                *투자금은 100% 무결성을 위한 스크래핑 엔진 구축과 플랫폼의 핵심 수익원인 '기업 데이터' 장악을 위한 B2B 영업망 확장에 최우선 투입됩니다.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Outro -->
+        <footer class="slide text-center bg-white">
+            <div class="aspect-ratio-box flex flex-col items-center justify-center">
+                <h2 class="text-5xl md:text-6xl font-black mb-4 md:mb-6 gradient-text">쉽다쉬워</h2>
+                <p class="text-lg md:text-2xl text-slate-600 mb-8 md:mb-12 font-light">가장 복잡한 하루의 업무를 단 몇 번의 클릭으로,<br>가장
+                    방대한 기업 데이터를 새로운 비즈니스로.</p>
+                <div class="w-16 md:w-24 h-1 bg-blue-600 mb-8 md:mb-12"></div>
+                <p class="text-lg md:text-xl font-bold text-slate-800">Thank You</p>
+            </div>
+        </footer>
+
+    </div> <!-- // presentation-container 닫기 -->
+
+    <nav id="pageDots" class="page-dots" aria-label="슬라이드 위치"></nav>
+
+    <!-- 스크립트 -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const slides = Array.from(document.querySelectorAll('.slide'));
+            const pageDots = document.getElementById('pageDots');
+            const counters = document.querySelectorAll('.counter');
+            const speed = 100; // 카운트업 속도 조절
+
+            const dots = slides.map((slide, index) => {
+                const dot = document.createElement('button');
+                dot.className = 'page-dot';
+                dot.type = 'button';
+                dot.setAttribute('aria-label', `${index + 1}번째 슬라이드로 이동`);
+                dot.addEventListener('click', () => {
+                    slide.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+                pageDots.appendChild(dot);
+                return dot;
+            });
+
+            const setActiveDot = (index) => {
+                dots.forEach((dot, dotIndex) => {
+                    dot.classList.toggle('is-active', dotIndex === index);
+                });
+            };
+
+            const startCounting = (counter) => {
+                const updateCount = () => {
+                    const target = +counter.getAttribute('data-target');
+                    const count = +counter.innerText.replace(/,/g, '');
+                    const inc = target / speed;
+
+                    if (count < target) {
+                        counter.innerText = Math.ceil(count + inc).toLocaleString();
+                        setTimeout(updateCount, 15);
+                    } else {
+                        counter.innerText = target.toLocaleString();
+                    }
+                };
+                updateCount();
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const counter = entry.target;
+                        if (!counter.classList.contains('counted')) {
+                            counter.innerText = '0';
+                            startCounting(counter);
+                            counter.classList.add('counted');
+                        }
+                    }
+                });
+            }, { threshold: 0.5 }); // 화면에 50% 보일 때 실행
+
+            counters.forEach(counter => {
+                observer.observe(counter);
+            });
+
+            document.querySelectorAll('.market-counter').forEach(counter => {
+                counter.innerText = '0';
+                startCounting(counter);
+                counter.classList.add('counted');
+            });
+
+            const pageObserver = new IntersectionObserver((entries) => {
+                const visibleEntry = entries
+                    .filter(entry => entry.isIntersecting)
+                    .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+                if (visibleEntry) {
+                    setActiveDot(slides.indexOf(visibleEntry.target));
+                }
+            }, { threshold: [0.45, 0.65, 0.85] });
+
+            slides.forEach(slide => {
+                pageObserver.observe(slide);
+            });
+
+            setActiveDot(0);
+        });
+    </script>
+</body>
+
+</html>
