@@ -227,10 +227,7 @@ function referencesForApi() {
 }
 
 function apiUrl(path) {
-  if (location.protocol === "file:") {
-    return `${SERVICE_ORIGIN}${path}`;
-  }
-  return path;
+  return `${SERVICE_ORIGIN}${path}`;
 }
 
 function serviceUrlForCurrentPage() {
@@ -937,9 +934,21 @@ function renderGallery() {
 }
 
 function renderMyPreviews() {
+  const prompt = selectedPrompt();
   const items = generatedForCurrentPrompt().slice().reverse();
-  els.myPreviewStrip.hidden = !items.length;
+  els.myPreviewStrip.hidden = false;
   els.myPreviewThumbs.innerHTML = "";
+  const originalButton = document.createElement("button");
+  originalButton.type = "button";
+  originalButton.className = items.length ? "original-thumb" : "active original-thumb";
+  originalButton.setAttribute("aria-label", `${prompt.title} 원본 샘플 보기`);
+  originalButton.innerHTML = `<img src="${prompt.thumb}" alt=""><span>원본</span>`;
+  originalButton.addEventListener("click", () => {
+    setMainPreview(prompt.thumb, `${prompt.title} 미리보기`);
+    [...els.myPreviewThumbs.querySelectorAll("button")].forEach((row) => row.classList.remove("active"));
+    originalButton.classList.add("active");
+  });
+  els.myPreviewThumbs.appendChild(originalButton);
   items.forEach((item, index) => {
     const button = document.createElement("button");
     button.type = "button";

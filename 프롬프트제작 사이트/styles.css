@@ -845,6 +845,7 @@ textarea:focus {
 }
 
 #myPreviewThumbs button {
+  position: relative;
   overflow: hidden;
   padding: 0;
   border: 2px solid transparent;
@@ -860,6 +861,18 @@ textarea:focus {
   width: 100%;
   aspect-ratio: 1 / 1;
   object-fit: cover;
+}
+
+#myPreviewThumbs span {
+  position: absolute;
+  left: 5px;
+  top: 5px;
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: rgba(23, 32, 51, .74);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 950;
 }
 
 .detail-preview p {
