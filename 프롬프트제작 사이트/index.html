@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prompt Atelier · AI 이미지 프롬프트 제작소</title>
+  <meta name="description" content="한국어 AI 이미지 프롬프트를 고르고 수정한 뒤, 같은 화면에서 바로 이미지 시안을 만들고 웹용/인쇄용으로 다운로드하는 프로토타입.">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#catalog" aria-label="Prompt Atelier 보드">
+      <span class="brand-mark">PA</span>
+      <span>
+        <strong>Prompt Atelier</strong>
+      </span>
+    </a>
+    <label class="global-search" aria-label="프롬프트 검색">
+      <span>검색</span>
+      <input id="topSearchInput" type="search" placeholder="만들고 싶은 이미지 검색">
+    </label>
+    <nav aria-label="주요 메뉴">
+      <a href="#catalog">보드</a>
+      <a href="#gallery">제작 이미지</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <div class="service-alert" id="serverBanner" hidden>
+      <strong>이미지 제작 서버 연결 확인</strong>
+      <span id="serverBannerText">이미지 제작은 로컬 서버 주소에서 가장 안정적으로 동작합니다.</span>
+    </div>
+
+    <section class="catalog" id="catalog" aria-labelledby="catalog-title">
+      <h1 class="sr-only" id="catalog-title">프롬프트 보드</h1>
+      <select id="categoryFilter" hidden>
+        <option value="all">전체</option>
+      </select>
+      <div class="category-chips" id="categoryChips" aria-label="카테고리 빠른 선택"></div>
+      <div class="catalog-grid" id="catalogGrid"></div>
+    </section>
+
+    <section class="detail" id="detail" aria-labelledby="detail-title" hidden>
+      <div class="detail-top">
+        <div>
+          <p id="selectedCategory">카테고리</p>
+          <h2 id="detail-title"><span id="selectedTitle">프롬프트 제목</span></h2>
+        </div>
+        <button class="btn ghost" id="backToCatalog" type="button">목록으로</button>
+      </div>
+
+      <div class="detail-layout">
+        <aside class="detail-preview" aria-label="선택한 프롬프트 미리보기">
+          <img id="detailPreviewImage" alt="">
+          <div class="preview-actions" id="previewActions" hidden>
+            <button class="btn ghost compact" id="previewOpen" type="button">크게 보기</button>
+            <button class="btn ghost compact" id="previewDownloadWeb" type="button">웹용</button>
+            <button class="btn primary compact" id="previewDownloadPrint" type="button">인쇄용</button>
+          </div>
+          <div class="my-preview-strip" id="myPreviewStrip" hidden>
+            <p>내가 제작한 이미지</p>
+            <div id="myPreviewThumbs"></div>
+          </div>
+        </aside>
+
+        <section class="editor-panel" aria-label="프롬프트 편집과 이미지 생성">
+          <div class="selected-head">
+            <div>
+              <h3>프롬프트</h3>
+            </div>
+            <div class="editor-actions">
+              <button class="btn ghost compact" id="copyPrompt" type="button">프롬프트 복사</button>
+              <button class="icon-btn" id="resetPrompt" type="button" aria-label="프롬프트 원상복구" title="프롬프트 원상복구">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v6h6"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="reference-uploader" aria-label="참고 이미지 추가">
+            <div class="upload-box" data-upload="person">
+              <label class="use-switch"><span>인물</span><input id="personUse" type="checkbox"><em>OFF</em></label>
+              <label class="file-drop">
+                <input id="personInput" type="file" accept="image/*" disabled>
+                <strong>인물</strong>
+                <small id="personFile">ON 후 이미지 첨부</small>
+              </label>
+            </div>
+            <div class="upload-box" data-upload="product">
+              <label class="use-switch"><span>제품사진</span><input id="productUse" type="checkbox"><em>OFF</em></label>
+              <label class="file-drop">
+                <input id="productInput" type="file" accept="image/*" disabled>
+                <strong>제품사진</strong>
+                <small id="productFile">ON 후 이미지 첨부</small>
+              </label>
+            </div>
+            <div class="upload-box" data-upload="background">
+              <label class="use-switch"><span>배경</span><input id="backgroundUse" type="checkbox"><em>OFF</em></label>
+              <label class="file-drop">
+                <input id="backgroundInput" type="file" accept="image/*" disabled>
+                <strong>배경</strong>
+                <small id="backgroundFile">ON 후 이미지 첨부</small>
+              </label>
+            </div>
+          </div>
+
+          <div class="product-template-panel" id="productTemplatePanel" hidden>
+            <label>
+              <span>제품 샘플</span>
+              <select id="productTemplateSelect"></select>
+            </label>
+            <label>
+              <span>제품 프롬프트</span>
+              <textarea id="productIntentInput" rows="2" spellcheck="false"></textarea>
+            </label>
+          </div>
+
+          <div class="line-editor" id="promptLineList"></div>
+          <button class="btn ghost add-line" id="addLineBtn" type="button">프롬프트 줄 추가</button>
+
+          <textarea id="promptEditor" hidden></textarea>
+
+          <div class="generation-options">
+            <label>
+              <span>비율</span>
+              <select id="ratioSelect">
+                <option value="4:5">4:5 카드형</option>
+                <option value="1:1">1:1 정사각</option>
+                <option value="16:9">16:9 와이드</option>
+                <option value="9:16">9:16 세로형</option>
+              </select>
+            </label>
+            <label>
+              <span>무드</span>
+              <select id="moodSelect">
+                <option value="clean">선명하고 깔끔하게</option>
+                <option value="cinematic">시네마틱하게</option>
+                <option value="bright">밝고 친근하게</option>
+                <option value="premium">프리미엄하게</option>
+              </select>
+            </label>
+            <button class="btn primary generate" id="generateBtn" type="button">이미지 제작</button>
+          </div>
+          <div class="status-line" id="statusLine"></div>
+          <div class="copy-panel" id="copyPanel" hidden>
+            <textarea id="copyFallbackText" rows="5" readonly spellcheck="false"></textarea>
+            <button class="btn ghost compact" id="copyPanelClose" type="button">닫기</button>
+          </div>
+        </section>
+      </div>
+
+      <section class="community-section" aria-labelledby="community-title">
+        <div class="section-head compact">
+          <h2 id="community-title">다른 사람들이 만든 이미지</h2>
+        </div>
+        <div class="community-grid" id="communityGrid"></div>
+      </section>
+    </section>
+
+    <section class="gallery" id="gallery" aria-labelledby="gallery-title">
+      <div class="section-head compact">
+        <h2 id="gallery-title">제작 이미지</h2>
+      </div>
+      <div class="empty-gallery" id="emptyGallery">
+        <strong>제작 이미지 없음</strong>
+      </div>
+      <div class="thumb-strip" id="thumbStrip"></div>
+    </section>
+  </main>
+
+  <div class="generation-modal" id="generationModal" aria-hidden="true" role="dialog" aria-label="이미지 생성 중">
+    <div class="generation-modal-panel">
+      <span class="loader"><span class="loader-inner"></span></span>
+      <strong>AI가 최종 이미지를 제작하고 있습니다</strong>
+      <p>참고 이미지와 프롬프트를 분석 중입니다. 완료 전까지 현재 화면을 유지해주세요.</p>
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox" aria-hidden="true" role="dialog" aria-label="생성 이미지 크게 보기">
+    <div class="lightbox-panel">
+      <button class="icon-btn close" id="closeLightbox" type="button" aria-label="닫기" title="닫기">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+      <div class="lightbox-image-wrap">
+        <img id="lightboxImage" alt="생성 이미지 큰 보기">
+      </div>
+      <div class="lightbox-info">
+        <div>
+          <p id="lightboxMeta">생성 이미지</p>
+          <h3 id="lightboxTitle">제목</h3>
+        </div>
+        <div class="download-actions">
+          <button class="btn ghost" id="downloadWeb" type="button">웹용 다운로드</button>
+          <button class="btn primary" id="downloadPrint" type="button">인쇄용 다운로드</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
