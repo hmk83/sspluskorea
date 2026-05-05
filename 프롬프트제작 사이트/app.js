@@ -780,6 +780,44 @@ function addPromptLine() {
   if (last) last.focus();
 }
 
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function optimizeReferenceImage(file) {
+  if (!file.type.startsWith("image/")) return readFileAsDataUrl(file);
+
+  return new Promise((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const maxSide = 1600;
+      const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+      const width = Math.max(1, Math.round(img.width * scale));
+      const height = Math.max(1, Math.round(img.height * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, width, height);
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL("image/jpeg", 0.86));
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("첨부 이미지를 읽을 수 없습니다."));
+    };
+    img.src = objectUrl;
+  });
+}
+
 function clearReferenceFile(type) {
   const inputMap = {
     person: els.personInput,
@@ -825,12 +863,11 @@ function handleReferenceUpload(type, file) {
     return;
   }
 
-  const reader = new FileReader();
-  reader.onload = () => {
+  optimizeReferenceImage(file).then((dataUrl) => {
     state.references[type] = {
       enabled: true,
       name: file.name,
-      dataUrl: String(reader.result || "")
+      dataUrl
     };
     labelMap[type].textContent = "삭제";
     box.style.removeProperty("--preview-image");
@@ -839,8 +876,10 @@ function handleReferenceUpload(type, file) {
       els.productIntentInput.value = selectedProductTemplate().prompt;
     }
     syncReferencePromptLines();
-  };
-  reader.readAsDataURL(file);
+  }).catch((error) => {
+    labelMap[type].textContent = REFERENCE_META[type].empty;
+    els.statusLine.textContent = error.message || "첨부 이미지를 읽을 수 없습니다.";
+  });
 }
 
 function handleReferenceToggle(type, enabled) {

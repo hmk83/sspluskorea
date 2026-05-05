@@ -13,21 +13,23 @@ const MIME_TYPES = {
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
   ".svg": "image/svg+xml; charset=utf-8",
-  ".webp": "image/webp"
+  ".webp": "image/webp",
+  ".ico": "image/x-icon"
 };
 
 loadEnvFile(path.join(ROOT, ".env.local"));
 loadEnvFile(path.join(ROOT, ".env"));
 
 const PORT = Number(process.env.PORT || 8844);
-const DEFAULT_IMAGE_MODELS = ["gemini-2.5-flash-image", "gemini-3-pro-image-preview"];
+const DEFAULT_IMAGE_MODELS = ["gemini-2.5-flash-image", "gemini-3.1-flash-image-preview", "gemini-3-pro-image-preview"];
 const MODELS = [...new Set([
+  ...DEFAULT_IMAGE_MODELS,
   ...String(process.env.GEMINI_IMAGE_MODEL || "")
     .split(",")
     .map((model) => model.trim())
-    .filter(Boolean),
-  ...DEFAULT_IMAGE_MODELS
+    .filter(Boolean)
 ])];
+const GOOGLE_TIMEOUT_MS = Number(process.env.GOOGLE_IMAGE_TIMEOUT_MS || 45000);
 
 function loadEnvFile(filePath) {
   if (!fs.existsSync(filePath)) return;
@@ -58,14 +60,19 @@ function sendJson(res, status, body) {
 function readJson(req) {
   return new Promise((resolve, reject) => {
     let body = "";
+    let tooLarge = false;
     req.on("data", (chunk) => {
+      if (tooLarge) return;
       body += chunk;
-      if (body.length > 18 * 1024 * 1024) {
-        reject(new Error("요청 이미지 용량이 너무 큽니다."));
-        req.destroy();
+      if (Buffer.byteLength(body) > 26 * 1024 * 1024) {
+        tooLarge = true;
+        const error = new Error("첨부 이미지 용량이 너무 큽니다. 이미지를 조금 줄인 뒤 다시 시도해주세요.");
+        error.statusCode = 413;
+        reject(error);
       }
     });
     req.on("end", () => {
+      if (tooLarge) return;
       try {
         resolve(JSON.parse(body || "{}"));
       } catch {
@@ -77,13 +84,33 @@ function readJson(req) {
 }
 
 function publicFilePath(urlPathname) {
+  if (urlPathname === "/favicon.ico") return null;
   const pathname = decodeURIComponent(urlPathname === "/" ? "/index.html" : urlPathname);
   const resolved = path.resolve(ROOT, `.${pathname}`);
   if (!resolved.startsWith(ROOT)) return null;
   return resolved;
 }
 
-function serveStatic(req, res, pathname) {
+function serveFavicon(res, headOnly = false) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#2457e6"/><text x="32" y="40" text-anchor="middle" font-family="Arial,sans-serif" font-size="23" font-weight="900" fill="#fff">PA</text></svg>`;
+  res.writeHead(200, {
+    "Access-Control-Allow-Origin": "*",
+    "Cache-Control": "public, max-age=86400",
+    "Content-Type": "image/svg+xml; charset=utf-8",
+    "Content-Length": Buffer.byteLength(svg)
+  });
+  if (headOnly) {
+    res.end();
+    return;
+  }
+  res.end(svg);
+}
+
+function serveStatic(req, res, pathname, headOnly = false) {
+  if (pathname === "/favicon.ico") {
+    serveFavicon(res, headOnly);
+    return;
+  }
   const filePath = publicFilePath(pathname);
   if (!filePath || !fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
     res.writeHead(404, { "Access-Control-Allow-Origin": "*", "Content-Type": "text/plain; charset=utf-8" });
@@ -91,7 +118,18 @@ function serveStatic(req, res, pathname) {
     return;
   }
   const ext = path.extname(filePath).toLowerCase();
-  res.writeHead(200, { "Access-Control-Allow-Origin": "*", "Content-Type": MIME_TYPES[ext] || "application/octet-stream" });
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Content-Type": MIME_TYPES[ext] || "application/octet-stream"
+  };
+  if ([".html", ".css", ".js"].includes(ext)) {
+    headers["Cache-Control"] = "no-store";
+  }
+  res.writeHead(200, headers);
+  if (headOnly) {
+    res.end();
+    return;
+  }
   fs.createReadStream(filePath).pipe(res);
 }
 
@@ -141,28 +179,38 @@ async function handleGenerate(req, res) {
     let failureMessage = "Google 이미지 생성 요청에 실패했습니다.";
 
     for (const model of MODELS) {
-      const googleRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-goog-api-key": apiKey
-          },
-          body: JSON.stringify({
-            contents: [{ parts }]
-          })
-        }
-      );
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), GOOGLE_TIMEOUT_MS);
+      try {
+        const googleRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-goog-api-key": apiKey
+            },
+            body: JSON.stringify({
+              contents: [{ parts }]
+            }),
+            signal: controller.signal
+          }
+        );
 
-      const payload = await googleRes.json();
-      if (googleRes.ok) {
-        result = payload;
-        usedModel = model;
-        break;
+        const payload = await googleRes.json();
+        if (googleRes.ok) {
+          result = payload;
+          usedModel = model;
+          break;
+        }
+        failureStatus = googleRes.status;
+        failureMessage = payload?.error?.message || failureMessage;
+      } catch (error) {
+        failureStatus = 504;
+        failureMessage = `${model} 이미지 생성 응답이 지연되어 다음 모델을 시도했습니다.`;
+      } finally {
+        clearTimeout(timeout);
       }
-      failureStatus = googleRes.status;
-      failureMessage = payload?.error?.message || failureMessage;
     }
 
     if (!result) {
@@ -182,7 +230,7 @@ async function handleGenerate(req, res) {
       model: usedModel
     });
   } catch (error) {
-    sendJson(res, 500, { error: error.message || "이미지 생성 중 오류가 발생했습니다." });
+    sendJson(res, error.statusCode || 500, { error: error.message || "이미지 생성 중 오류가 발생했습니다." });
   }
 }
 
@@ -212,8 +260,8 @@ const server = http.createServer((req, res) => {
     handleHealth(res);
     return;
   }
-  if (req.method === "GET") {
-    serveStatic(req, res, url.pathname);
+  if (req.method === "GET" || req.method === "HEAD") {
+    serveStatic(req, res, url.pathname, req.method === "HEAD");
     return;
   }
   res.writeHead(405, { "Access-Control-Allow-Origin": "*", "Content-Type": "text/plain; charset=utf-8" });
