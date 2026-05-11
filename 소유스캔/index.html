@@ -1,0 +1,2331 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>소유스캔 | B2B 부동산 소유 현황 API</title>
+  <meta name="description" content="소유스캔은 기업의 영업, 심사, 채권, 법률 업무에 필요한 부동산 소유 현황 조회 API와 맞춤형 솔루션 구축을 제공합니다.">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080912;
+      --bg-2: #101321;
+      --panel: #141827;
+      --panel-2: #191e30;
+      --line: rgba(137, 116, 255, 0.26);
+      --line-soft: rgba(255, 255, 255, 0.08);
+      --text: #f6f7ff;
+      --muted: #a8acc7;
+      --dim: #737994;
+      --accent: #806cff;
+      --accent-2: #a58cff;
+      --cyan: #74ddff;
+      --good: #43e7b9;
+      --warn: #ffd36a;
+      --danger: #ff7d96;
+      --shadow: 0 28px 80px rgba(0, 0, 0, 0.42);
+      --radius: 28px;
+      --radius-sm: 8px;
+      --max: 1180px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(128, 108, 255, 0.18), transparent 26rem),
+        linear-gradient(180deg, #090a14 0%, #0b0d18 46%, #080912 100%);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+      letter-spacing: 0;
+      word-break: keep-all;
+      overflow-x: hidden;
+    }
+
+    body.modal-open {
+      overflow: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    .page-shell {
+      max-width: 100vw;
+      overflow: hidden;
+      position: relative;
+      background-image:
+        linear-gradient(180deg, rgba(8, 9, 18, 0.58) 0%, rgba(8, 9, 18, 0.9) 42%, rgba(8, 9, 18, 0.98) 100%),
+        url("https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=2000&q=82");
+      background-size: auto, 100% auto;
+      background-position: center top;
+      background-repeat: repeat, no-repeat;
+    }
+
+    .site-header {
+      position: fixed;
+      z-index: 50;
+      top: 0;
+      left: 0;
+      right: 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      background: rgba(8, 9, 18, 0.76);
+      backdrop-filter: blur(18px);
+      transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .site-header.is-scrolled {
+      border-bottom-color: rgba(128, 108, 255, 0.24);
+      background: rgba(11, 13, 24, 0.94);
+      box-shadow: 0 18px 46px rgba(0, 0, 0, 0.28);
+    }
+
+    .site-header.is-scrolled .nav {
+      color: #d8dcff;
+    }
+
+    .site-header.is-scrolled .nav a:hover {
+      color: var(--accent-2);
+    }
+
+    .site-header.is-scrolled .brand {
+      color: #ffffff;
+    }
+
+    .header-inner {
+      width: min(var(--max), calc(100% - 40px));
+      height: 74px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 22px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      min-width: max-content;
+      font-weight: 800;
+      font-size: 19px;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #806cff, #54d5ff);
+      color: white;
+      box-shadow: 0 0 34px rgba(128, 108, 255, 0.34);
+    }
+
+    .brand-mark svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .nav a:hover {
+      color: var(--text);
+    }
+
+    .btn {
+      border: 0;
+      border-radius: var(--radius-sm);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 46px;
+      padding: 0 18px;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), #6c8dff);
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 14px 34px rgba(128, 108, 255, 0.32);
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 42px rgba(128, 108, 255, 0.42);
+    }
+
+    .btn.secondary {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--line-soft);
+      box-shadow: none;
+      color: var(--text);
+    }
+
+    .btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    main {
+      position: relative;
+    }
+
+    .section {
+      width: min(var(--max), calc(100% - 40px));
+      margin: 0 auto;
+      padding: 118px 0;
+    }
+
+    .hero {
+      min-height: 100svh;
+      width: min(var(--max), calc(100% - 40px));
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(420px, 0.88fr);
+      align-items: center;
+      gap: 58px;
+      padding: 104px 0 50px;
+    }
+
+    .hero-copy {
+      padding-top: 10px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      max-width: 660px;
+      font-size: clamp(36px, 4.2vw, 56px);
+      line-height: 1.12;
+      font-weight: 900;
+    }
+
+    .gradient-text {
+      display: block;
+      color: var(--accent-2);
+      background: linear-gradient(90deg, #ffffff 0%, #a996ff 50%, #6ce3ff 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-line {
+      display: block;
+    }
+
+    .hero-line.sub {
+      font-size: 0.92em;
+      color: var(--accent-2);
+      background: linear-gradient(90deg, #ffffff 0%, #b7a7ff 44%, #75dfff 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      margin: 30px 0 0;
+      max-width: 560px;
+      color: #c9cee7;
+      font-size: 18px;
+      line-height: 1.72;
+      font-weight: 500;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 32px;
+    }
+
+    .hero-proof {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 54px;
+      max-width: 660px;
+    }
+
+    .proof-item {
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+    }
+
+    .proof-value {
+      color: var(--text);
+      font-size: 26px;
+      font-weight: 900;
+    }
+
+    .proof-label {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      font-weight: 650;
+    }
+
+    .hero-visual {
+      position: relative;
+      min-height: 520px;
+      display: grid;
+      align-items: center;
+    }
+
+    .scan-console {
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 30px;
+      background:
+        linear-gradient(180deg, rgba(26, 31, 51, 0.96), rgba(12, 15, 29, 0.98)),
+        linear-gradient(135deg, rgba(128, 108, 255, 0.24), transparent);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .console-top {
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--line-soft);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .console-top span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 8px;
+    }
+
+    .window-dots span {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.22);
+    }
+
+    .console-body {
+      padding: 24px;
+    }
+
+    .identity-card {
+      display: grid;
+      gap: 18px;
+      padding: 26px;
+      border: 1px solid rgba(128, 108, 255, 0.22);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .id-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .id-row strong {
+      color: var(--text);
+      font-size: 16px;
+    }
+
+    .result-stack {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .result-row {
+      display: grid;
+      grid-template-columns: 42px 1fr auto;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      border: 1px solid var(--line-soft);
+      border-radius: 18px;
+      background: rgba(7, 9, 18, 0.7);
+    }
+
+    .result-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      color: var(--accent-2);
+      background: rgba(128, 108, 255, 0.12);
+    }
+
+    .result-icon svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .result-title {
+      font-weight: 850;
+      font-size: 15px;
+    }
+
+    .result-meta {
+      margin-top: 4px;
+      color: var(--dim);
+      font-size: 12px;
+      line-height: 1.45;
+      font-weight: 700;
+    }
+
+    .result-status {
+      border-radius: 999px;
+      padding: 8px 10px;
+      color: var(--good);
+      background: rgba(67, 231, 185, 0.11);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .api-strip {
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: 20px;
+      background: #090b16;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: #cfd5ff;
+      font-size: 12px;
+      line-height: 1.85;
+      overflow: hidden;
+    }
+
+    .api-strip span {
+      color: var(--cyan);
+    }
+
+    .floating-note {
+      position: absolute;
+      right: -20px;
+      bottom: 76px;
+      width: 230px;
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(18, 22, 38, 0.92);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.34);
+    }
+
+    .floating-note strong {
+      display: block;
+      font-size: 28px;
+      color: var(--accent-2);
+    }
+
+    .floating-note span {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      font-weight: 700;
+    }
+
+    .hero .hero-proof,
+    .hero .api-strip,
+    .hero .floating-note {
+      display: none;
+    }
+
+    .section-head {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 42px;
+    }
+
+    .section > .section-head,
+    .case-section > .section-head {
+      justify-items: center;
+      text-align: center;
+    }
+
+    .section > .section-head .section-title,
+    .section > .section-head .section-desc,
+    .case-section > .section-head .section-title,
+    .case-section > .section-head .section-desc {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .section-kicker {
+      color: var(--accent-2);
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .section-title {
+      margin: 0;
+      max-width: 780px;
+      font-size: clamp(26px, 3vw, 38px);
+      line-height: 1.22;
+      font-weight: 900;
+      scroll-margin-top: 128px;
+    }
+
+    .section-desc {
+      margin: 0;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.75;
+      font-weight: 600;
+    }
+
+    .story-intro {
+      text-align: center;
+      padding-top: 44px;
+    }
+
+    .story-intro .section-head {
+      align-items: center;
+    }
+
+    .story-intro .section-desc {
+      margin: 0 auto;
+    }
+
+    .vertical-line {
+      width: 1px;
+      height: 120px;
+      margin: 40px auto 0;
+      background: linear-gradient(180deg, transparent, var(--accent), transparent);
+      position: relative;
+    }
+
+    .vertical-line::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 34px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      transform: translateX(-50%);
+      box-shadow: 0 0 22px var(--accent);
+    }
+
+    .market-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .metric-card,
+    .dark-card,
+    .target-card {
+      border: 1px solid var(--line-soft);
+      border-radius: 24px;
+      background: rgba(14, 17, 31, 0.92);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
+    }
+
+    .metric-card {
+      min-height: 244px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-number {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--accent);
+      color: white;
+      font-weight: 900;
+      box-shadow: 0 0 30px rgba(128, 108, 255, 0.42);
+    }
+
+    .metric-card h3 {
+      margin: 20px 0 10px;
+      font-size: 22px;
+      line-height: 1.3;
+    }
+
+    .metric-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .metric-value {
+      margin-top: 24px;
+      color: var(--accent-2);
+      font-size: 52px;
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    .value-bar {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      margin-top: 28px;
+    }
+
+    .value-bar span {
+      display: block;
+      height: 100%;
+      width: 72%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), #6ce3ff);
+    }
+
+    .pain-section {
+      width: min(1320px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 112px 0;
+      border-radius: 42px;
+      background:
+        linear-gradient(180deg, rgba(31, 36, 58, 0.96), rgba(17, 20, 35, 0.98)),
+        radial-gradient(circle at 50% 0%, rgba(128, 108, 255, 0.2), transparent 34rem);
+      border: 1px solid rgba(137, 116, 255, 0.16);
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.28);
+    }
+
+    .pain-inner {
+      width: min(var(--max), calc(100% - 44px));
+      margin: 0 auto;
+    }
+
+    .interview-title {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .interview-title h2 {
+      margin: 0;
+      font-size: clamp(26px, 3vw, 38px);
+      line-height: 1.24;
+    }
+
+    .interview-title p {
+      margin: 14px auto 0;
+      max-width: 720px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.7;
+      font-weight: 650;
+    }
+
+    .quote-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .quote-card {
+      padding: 30px;
+      min-height: 300px;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(15, 18, 32, 0.98), rgba(10, 12, 23, 0.98));
+      box-shadow: 0 18px 46px rgba(0, 0, 0, 0.2);
+    }
+
+    .persona {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+      font-weight: 800;
+    }
+
+    .quote {
+      margin: 24px 0;
+      display: inline;
+      color: white;
+      background: linear-gradient(180deg, transparent 56%, rgba(128, 108, 255, 0.56) 56%);
+      font-size: 20px;
+      line-height: 1.45;
+      font-weight: 900;
+    }
+
+    .needs {
+      margin-top: 32px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .needs strong {
+      display: block;
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: white;
+    }
+
+    .needs p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.72;
+      font-weight: 600;
+    }
+
+    .bridge-cta {
+      width: min(760px, 100%);
+      margin: 54px auto 0;
+      border-radius: 999px;
+      padding: 22px 28px;
+      text-align: center;
+      background: linear-gradient(135deg, #6f5df4, #8c78ff);
+      color: white;
+      font-size: 20px;
+      line-height: 1.4;
+      font-weight: 900;
+      box-shadow: 0 18px 54px rgba(128, 108, 255, 0.34);
+    }
+
+    .case-section {
+      width: min(var(--max), calc(100% - 40px));
+      margin: 0 auto;
+      padding: 88px 0 40px;
+      scroll-margin-top: 92px;
+    }
+
+    .case-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .case-card {
+      position: relative;
+      min-height: 360px;
+      padding: 30px;
+      border-radius: 28px;
+      border: 1px solid var(--line-soft);
+      background:
+        linear-gradient(180deg, rgba(20, 24, 39, 0.96), rgba(10, 12, 23, 0.98));
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+      overflow: hidden;
+    }
+
+    .case-card::after {
+      content: "";
+      position: absolute;
+      inset: auto -40px -70px auto;
+      width: 170px;
+      height: 170px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(128, 108, 255, 0.22), transparent 68%);
+      pointer-events: none;
+    }
+
+    .case-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 32px;
+    }
+
+    .case-company {
+      display: grid;
+      gap: 6px;
+    }
+
+    .case-company strong {
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    .case-company span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .case-avatar {
+      position: relative;
+      flex: 0 0 auto;
+      width: 112px;
+      height: 112px;
+      border-radius: 38px;
+      display: block;
+      object-fit: cover;
+      object-position: center top;
+      background:
+        radial-gradient(circle at 32% 22%, rgba(255, 255, 255, 0.24), transparent 18%),
+        linear-gradient(145deg, rgba(132, 109, 255, 0.52), rgba(36, 32, 73, 0.34) 55%, rgba(13, 16, 31, 0.08));
+      box-shadow:
+        inset -14px -14px 28px rgba(20, 16, 40, 0.46),
+        inset 12px 14px 30px rgba(255, 255, 255, 0.13),
+        0 22px 52px rgba(128, 108, 255, 0.34);
+    }
+
+    .avatar-hair {
+      position: absolute;
+      left: 50%;
+      top: 14px;
+      width: 75px;
+      height: 58px;
+      border-radius: 36px 36px 22px 22px;
+      background:
+        radial-gradient(circle at 24% 36%, rgba(255, 255, 255, 0.12), transparent 20%),
+        linear-gradient(145deg, #302833 0%, #17151e 78%);
+      box-shadow:
+        inset 12px 10px 20px rgba(255, 255, 255, 0.1),
+        inset -8px -10px 18px rgba(0, 0, 0, 0.24);
+      transform: translateX(-50%);
+      z-index: 1;
+    }
+
+    .avatar-face {
+      position: absolute;
+      left: 50%;
+      top: 31px;
+      width: 68px;
+      height: 70px;
+      border-radius: 32px 32px 34px 34px;
+      background:
+        radial-gradient(circle at 26% 62%, rgba(255, 116, 136, 0.3), transparent 12%),
+        radial-gradient(circle at 74% 62%, rgba(255, 116, 136, 0.24), transparent 12%),
+        radial-gradient(circle at 30% 18%, rgba(255, 255, 255, 0.44), transparent 18%),
+        linear-gradient(145deg, #ffe0c9 0%, #f3b58e 58%, #d98270 100%);
+      transform: translateX(-50%);
+      box-shadow:
+        inset -9px -12px 18px rgba(132, 69, 66, 0.24),
+        inset 8px 8px 20px rgba(255, 255, 255, 0.35),
+        0 8px 18px rgba(23, 12, 25, 0.22);
+      z-index: 2;
+    }
+
+    .avatar-eye {
+      content: "";
+      position: absolute;
+      top: 57px;
+      width: 8px;
+      height: 11px;
+      border-radius: 50%;
+      background: #201925;
+      box-shadow:
+        inset 1px 1px 0 rgba(255, 255, 255, 0.42),
+        0 1px 0 rgba(255, 255, 255, 0.32);
+      z-index: 3;
+    }
+
+    .avatar-eye.left {
+      left: 44px;
+    }
+
+    .avatar-eye.right {
+      right: 44px;
+    }
+
+    .avatar-nose {
+      position: absolute;
+      left: 50%;
+      top: 67px;
+      width: 8px;
+      height: 12px;
+      border-radius: 8px;
+      border-right: 2px solid rgba(130, 78, 71, 0.42);
+      transform: translateX(-50%);
+      z-index: 3;
+    }
+
+    .avatar-mouth {
+      position: absolute;
+      left: 50%;
+      bottom: 25px;
+      width: 26px;
+      height: 13px;
+      border: 3px solid rgba(64, 35, 48, 0.86);
+      border-top: 0;
+      border-radius: 0 0 24px 24px;
+      transform: translateX(-50%);
+      z-index: 3;
+    }
+
+    .case-avatar.d .avatar-hair {
+      top: 12px;
+      width: 78px;
+      height: 54px;
+      background:
+        radial-gradient(circle at 25% 35%, rgba(255, 255, 255, 0.13), transparent 20%),
+        linear-gradient(145deg, #4d3826, #171317 80%);
+    }
+
+    .case-avatar.d::before,
+    .case-avatar.d::after {
+      content: "";
+      position: absolute;
+      top: 53px;
+      width: 23px;
+      height: 17px;
+      border: 3px solid rgba(32, 25, 37, 0.82);
+      border-radius: 9px;
+      z-index: 4;
+    }
+
+    .case-avatar.d::before {
+      left: 29px;
+    }
+
+    .case-avatar.d::after {
+      right: 29px;
+    }
+
+    .case-avatar.d .avatar-face {
+      background:
+        radial-gradient(circle at 27% 62%, rgba(255, 137, 134, 0.22), transparent 13%),
+        radial-gradient(circle at 73% 62%, rgba(255, 137, 134, 0.2), transparent 13%),
+        radial-gradient(circle at 30% 18%, rgba(255, 255, 255, 0.38), transparent 18%),
+        linear-gradient(145deg, #ffe0b8 0%, #d9aa73 60%, #aa714c 100%);
+    }
+
+    .case-avatar.a .avatar-hair {
+      top: 10px;
+      width: 84px;
+      height: 70px;
+      border-radius: 42px 42px 28px 28px;
+      background:
+        radial-gradient(circle at 28% 25%, rgba(255, 255, 255, 0.44), transparent 20%),
+        linear-gradient(145deg, #ffe082 0%, #e5ac4e 58%, #a96b2e 100%);
+      box-shadow:
+        inset 14px 10px 22px rgba(255, 255, 255, 0.34),
+        inset -10px -14px 20px rgba(113, 70, 29, 0.24);
+    }
+
+    .case-avatar.a .avatar-face {
+      top: 33px;
+      background:
+        radial-gradient(circle at 27% 62%, rgba(255, 115, 142, 0.28), transparent 13%),
+        radial-gradient(circle at 73% 62%, rgba(255, 115, 142, 0.24), transparent 13%),
+        linear-gradient(145deg, #ffddc5 0%, #f0b493 62%, #d98273 100%);
+    }
+
+    .case-quote {
+      display: inline;
+      color: white;
+      background: linear-gradient(180deg, transparent 54%, rgba(128, 108, 255, 0.72) 54%);
+      font-size: 20px;
+      line-height: 1.48;
+      font-weight: 950;
+    }
+
+    .case-body {
+      margin-top: 28px;
+      padding-top: 22px;
+      border-top: 1px solid var(--line-soft);
+    }
+
+    .case-body h3 {
+      margin: 0 0 10px;
+      color: var(--accent-2);
+      font-size: 17px;
+    }
+
+    .case-body p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.72;
+      font-weight: 650;
+    }
+
+    .solution-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .dark-card {
+      min-height: 316px;
+      padding: 34px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .feature-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: rgba(128, 108, 255, 0.14);
+      color: var(--accent-2);
+    }
+
+    .feature-icon svg {
+      width: 30px;
+      height: 30px;
+    }
+
+    .dark-card h3 {
+      margin: 34px 0 12px;
+      color: var(--accent-2);
+      font-size: 22px;
+      line-height: 1.32;
+    }
+
+    .dark-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.74;
+      font-weight: 600;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 28px;
+      align-items: stretch;
+    }
+
+    .api-panel {
+      border: 1px solid var(--line-soft);
+      border-radius: 30px;
+      padding: 34px;
+      background: rgba(20, 24, 39, 0.86);
+      box-shadow: var(--shadow);
+    }
+
+    .api-panel h2 {
+      margin: 0;
+      font-size: clamp(26px, 3vw, 38px);
+      line-height: 1.2;
+    }
+
+    .api-panel p {
+      color: var(--muted);
+      line-height: 1.78;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .contract-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .contract-row {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--line-soft);
+    }
+
+    .check {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      color: var(--good);
+      background: rgba(67, 231, 185, 0.1);
+    }
+
+    .contract-row strong {
+      display: block;
+      font-size: 15px;
+    }
+
+    .contract-row span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+      font-weight: 650;
+    }
+
+    .flow {
+      display: grid;
+      gap: 16px;
+    }
+
+    .flow-step {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 18px;
+      padding: 24px;
+      border-radius: 24px;
+      border: 1px solid var(--line-soft);
+      background: rgba(14, 17, 31, 0.9);
+    }
+
+    .flow-num {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), #54d5ff);
+      font-weight: 950;
+      font-size: 20px;
+    }
+
+    .flow-step h3 {
+      margin: 0 0 8px;
+      font-size: 19px;
+    }
+
+    .flow-step p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.65;
+      font-weight: 600;
+    }
+
+    .target-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .target-card {
+      min-height: 230px;
+      padding: 24px;
+    }
+
+    .target-card h3 {
+      margin: 0 0 12px;
+      font-size: 19px;
+      line-height: 1.35;
+    }
+
+    .target-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.68;
+      font-weight: 600;
+    }
+
+    .target-card .tag {
+      display: inline-flex;
+      margin-bottom: 28px;
+      color: var(--accent-2);
+      font-size: 12px;
+      font-weight: 950;
+    }
+
+    .pricing-band {
+      width: min(1320px, calc(100% - 40px));
+      margin: 0 auto;
+      border-radius: 42px;
+      background: linear-gradient(180deg, rgba(29, 34, 54, 0.95), rgba(17, 21, 36, 0.96));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: var(--shadow);
+    }
+
+    .pricing-inner {
+      width: min(var(--max), calc(100% - 44px));
+      margin: 0 auto;
+      padding: 92px 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 34px;
+      align-items: center;
+    }
+
+    .price-box {
+      padding: 34px;
+      border-radius: 30px;
+      background: #0b0d18;
+      border: 1px solid var(--line-soft);
+    }
+
+    .price-box h3 {
+      margin: 0 0 14px;
+      font-size: 21px;
+    }
+
+    .price {
+      display: block;
+      margin: 22px 0 14px;
+      color: var(--accent-2);
+      font-size: clamp(36px, 5vw, 56px);
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    .price-box p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-weight: 600;
+    }
+
+    .legal-note {
+      margin-top: 24px;
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 211, 106, 0.2);
+      background: rgba(255, 211, 106, 0.08);
+      color: #f4dfab;
+      font-size: 13px;
+      line-height: 1.65;
+      font-weight: 650;
+    }
+
+    .final-cta {
+      text-align: center;
+      padding-bottom: 140px;
+    }
+
+    .final-cta h2 {
+      margin: 0 auto;
+      max-width: 840px;
+      font-size: clamp(28px, 3.6vw, 44px);
+      line-height: 1.18;
+    }
+
+    .final-cta p {
+      margin: 22px auto 34px;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.72;
+      font-weight: 600;
+    }
+
+    .footer {
+      border-top: 1px solid var(--line-soft);
+      background: rgba(6, 7, 13, 0.72);
+      padding: 34px 0;
+    }
+
+    .footer-inner {
+      width: min(var(--max), calc(100% - 40px));
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      color: var(--dim);
+      font-size: 13px;
+      line-height: 1.6;
+      font-weight: 650;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.66);
+      backdrop-filter: blur(14px);
+    }
+
+    .modal.is-open {
+      display: flex;
+    }
+
+    .modal-card {
+      width: min(720px, 100%);
+      max-height: min(90svh, 860px);
+      overflow: auto;
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #111522;
+      box-shadow: 0 34px 100px rgba(0, 0, 0, 0.56);
+    }
+
+    .modal-head {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 28px 30px 20px;
+      background: rgba(17, 21, 34, 0.95);
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .modal-head h2 {
+      margin: 0;
+      font-size: 27px;
+    }
+
+    .modal-head p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .close-btn {
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--line-soft);
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+      cursor: pointer;
+    }
+
+    .close-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .inquiry-form {
+      padding: 28px 30px 30px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .field label,
+    .consent-label {
+      color: #e9ebff;
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      min-height: 48px;
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      border-radius: 8px;
+      padding: 0 14px;
+      color: var(--text);
+      background: rgba(5, 7, 14, 0.72);
+      outline: none;
+    }
+
+    .field textarea {
+      min-height: 124px;
+      padding: 14px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: rgba(128, 108, 255, 0.76);
+      box-shadow: 0 0 0 3px rgba(128, 108, 255, 0.18);
+    }
+
+    .consent {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 14px;
+      border: 1px solid var(--line-soft);
+      background: rgba(255, 255, 255, 0.04);
+      display: grid;
+      grid-template-columns: 22px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .consent input {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      accent-color: var(--accent);
+    }
+
+    .consent p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.65;
+      font-weight: 600;
+    }
+
+    .consent-detail {
+      display: inline-flex;
+      margin-top: 8px;
+      color: var(--accent-2);
+      font-size: 12px;
+      font-weight: 850;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .consent-detail:hover {
+      color: #c9bdff;
+    }
+
+    .form-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 22px;
+    }
+
+    .form-note {
+      color: var(--dim);
+      font-size: 12px;
+      line-height: 1.5;
+      font-weight: 650;
+    }
+
+    .form-status {
+      display: none;
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: rgba(67, 231, 185, 0.11);
+      color: #b7f7e7;
+      border: 1px solid rgba(67, 231, 185, 0.24);
+      line-height: 1.55;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .form-status.is-visible {
+      display: block;
+    }
+
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 140;
+      width: min(420px, calc(100% - 48px));
+      padding: 16px 18px;
+      border: 1px solid rgba(67, 231, 185, 0.28);
+      border-radius: 16px;
+      background: rgba(12, 17, 28, 0.96);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.44);
+      color: #eafff8;
+      font-size: 14px;
+      line-height: 1.55;
+      font-weight: 800;
+      opacity: 0;
+      transform: translateY(14px);
+      pointer-events: none;
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .toast.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .floating-top {
+      position: fixed;
+      right: 22px;
+      bottom: 92px;
+      z-index: 80;
+      width: 48px;
+      height: 48px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: white;
+      background: rgba(20, 24, 39, 0.88);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.36);
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: opacity 180ms ease, transform 180ms ease, background 180ms ease;
+      backdrop-filter: blur(14px);
+    }
+
+    .floating-top.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .floating-top:hover {
+      background: linear-gradient(135deg, var(--accent), #6c8dff);
+    }
+
+    .floating-top svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    @media (max-width: 980px) {
+      .nav {
+        display: none;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+        gap: 42px;
+        padding-top: 112px;
+        text-align: center;
+      }
+
+      .hero h1,
+      .hero-desc {
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .hero-actions {
+        justify-content: center;
+      }
+
+      .scan-console {
+        width: min(620px, 100%);
+        margin: 0 auto;
+      }
+
+      .hero-visual {
+        min-height: 0;
+      }
+
+      .floating-note {
+        right: 18px;
+        bottom: 18px;
+      }
+
+      .market-grid,
+      .quote-grid,
+      .case-grid,
+      .solution-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .two-col,
+      .pricing-inner {
+        grid-template-columns: 1fr;
+      }
+
+      .target-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .section,
+      .case-section {
+        padding-top: 96px;
+        padding-bottom: 96px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .header-inner,
+      .section,
+      .hero,
+      .case-section,
+      .footer-inner {
+        width: min(100% - 28px, var(--max));
+      }
+
+      .header-inner {
+        height: 66px;
+        gap: 12px;
+      }
+
+      .brand {
+        font-size: 17px;
+      }
+
+      .header-inner > .btn {
+        min-height: 40px;
+        padding: 0 12px;
+        font-size: 12px;
+        flex: 0 0 auto;
+        max-width: 108px;
+        white-space: nowrap;
+      }
+
+      .header-inner > .btn svg {
+        display: none;
+      }
+
+      .hero {
+        width: 100%;
+        padding-left: 14px;
+        padding-right: 14px;
+        min-height: auto;
+        padding-top: 106px;
+        padding-bottom: 58px;
+        gap: 30px;
+      }
+
+      .hero-copy {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .hero h1 {
+        font-size: clamp(28px, 7.8vw, 32px);
+        line-height: 1.12;
+        word-break: normal;
+        overflow-wrap: anywhere;
+      }
+
+      .hero-desc {
+        max-width: 292px;
+        margin-left: auto;
+        margin-right: auto;
+        font-size: 15px;
+        word-break: break-all;
+        overflow-wrap: anywhere;
+      }
+
+      .hero-proof {
+        grid-template-columns: 1fr;
+      }
+
+      .section {
+        padding: 70px 0;
+      }
+
+      .case-section {
+        padding: 70px 0 34px;
+      }
+
+      .section-title {
+        font-size: 25px;
+        line-height: 1.26;
+      }
+
+      .section-desc {
+        font-size: 15px;
+      }
+
+      .pain-section,
+      .pricing-band {
+        width: calc(100% - 20px);
+        border-radius: 28px;
+      }
+
+      .quote-card,
+      .dark-card,
+      .metric-card,
+      .api-panel,
+      .price-box {
+        border-radius: 20px;
+        padding: 22px;
+      }
+
+      .scan-console {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 22px;
+      }
+
+      .scan-console * {
+        max-width: 100%;
+      }
+
+      .console-top {
+        gap: 12px;
+        padding: 0 16px;
+      }
+
+      .console-top span {
+        max-width: 210px;
+      }
+
+      .console-body {
+        padding: 14px;
+      }
+
+      .identity-card {
+        padding: 16px;
+        gap: 14px;
+      }
+
+      .id-row {
+        display: grid;
+        gap: 5px;
+        text-align: left;
+      }
+
+      .result-row {
+        grid-template-columns: 38px 1fr;
+      }
+
+      .result-title,
+      .result-meta {
+        overflow-wrap: anywhere;
+        word-break: normal;
+      }
+
+      .result-status {
+        grid-column: 2;
+        width: max-content;
+      }
+
+      .floating-note {
+        position: static;
+        width: auto;
+        margin-top: 16px;
+      }
+
+      .target-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .bridge-cta {
+        border-radius: 20px;
+        font-size: 17px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-actions,
+      .footer-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .modal {
+        padding: 10px;
+      }
+
+      .modal-card {
+        border-radius: 22px;
+        max-height: 92svh;
+      }
+
+      .modal-head,
+      .inquiry-form {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      .toast {
+        right: 14px;
+        bottom: 14px;
+        width: calc(100% - 28px);
+      }
+
+      .floating-top {
+        right: 14px;
+        bottom: 78px;
+        width: 44px;
+        height: 44px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="#top" aria-label="소유스캔 홈">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M5 19V7.7L12 4l7 3.7V19" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M9 19v-6h6v6M8 10h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
+          소유스캔
+        </a>
+        <nav class="nav" aria-label="주요 메뉴">
+          <a href="#market">시장</a>
+          <a href="#solution">솔루션</a>
+          <a href="#api">API</a>
+          <a href="#targets">적용 분야</a>
+          <a href="#pricing">가격</a>
+        </nav>
+        <button class="btn js-open-inquiry" type="button" aria-haspopup="dialog">
+          문의하기
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <h1 id="hero-title">
+            <span class="hero-line">부동산 소유 확인을</span>
+            <span class="hero-line sub">기업 업무 데이터로.</span>
+          </h1>
+          <p class="hero-desc">
+            소유스캔은 부동산 소유 현황과 권리 정보를 기업의 영업, 심사, 채권 검토 흐름에 연결하는 B2B API 솔루션입니다.
+          </p>
+          <div class="hero-actions">
+            <button class="btn js-open-inquiry" type="button">
+              기업 도입 문의
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+          <div class="hero-proof" aria-label="서비스 핵심 수치">
+            <div class="proof-item">
+              <div class="proof-value">API</div>
+              <div class="proof-label">기업 시스템 연동을 위한 조회 인터페이스 제공</div>
+            </div>
+            <div class="proof-item">
+              <div class="proof-value">B2B</div>
+              <div class="proof-label">금융, 법무, 영업 조직 중심 도입 구조</div>
+            </div>
+            <div class="proof-item">
+              <div class="proof-value">문의</div>
+              <div class="proof-label">계약 범위와 조회량에 맞춘 개별 견적</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-visual" aria-label="소유스캔 조회 콘솔 예시">
+          <div class="scan-console">
+            <div class="console-top">
+              <div class="window-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+              <span>Property Ownership Intelligence</span>
+            </div>
+            <div class="console-body">
+              <div class="identity-card">
+                <div class="id-row"><span>조회 기준</span><strong>성명 + 생년월일</strong></div>
+                <div class="id-row"><span>사용 목적</span><strong>B2B 심사·영업 검증</strong></div>
+                <div class="id-row"><span>제공 방식</span><strong>Web · API · 자체 구축</strong></div>
+              </div>
+              <div class="result-stack">
+                <div class="result-row">
+                  <div class="result-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M4 20h16M6 20V9l6-4 6 4v11M10 20v-6h4v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
+                  <div>
+                    <div class="result-title">부동산 소유 현황</div>
+                    <div class="result-meta">소유 여부, 물건 수, 기초 자산 신호</div>
+                  </div>
+                  <span class="result-status">확인 가능</span>
+                </div>
+                <div class="result-row">
+                  <div class="result-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M7 11h10M7 15h7M5 4h14v16H5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
+                  <div>
+                    <div class="result-title">등기 기반 상세 정보</div>
+                    <div class="result-meta">대출, 채권, 압류, 채권 순위 정보</div>
+                  </div>
+                  <span class="result-status">계약 협의</span>
+                </div>
+              </div>
+              <div class="api-strip" aria-label="API 예시 코드">
+                POST <span>/v1/ownership/search</span><br>
+                { "name": "client", "birthDate": "YYYY-MM-DD", "purpose": "b2b_due_diligence" }
+              </div>
+            </div>
+          </div>
+          <div class="floating-note">
+            <strong>Lead Fit</strong>
+            <span>구매력, 담보력, 회수 가능성 판단에 필요한 자산 신호를 업무 흐름 안으로 연결합니다.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section story-intro" aria-labelledby="overview-title">
+        <div class="section-head">
+          <span class="section-kicker">Overview</span>
+          <h2 class="section-title" id="overview-title">흩어진 부동산 정보를 기업 업무의 판단 기준으로 정리합니다.</h2>
+          <p class="section-desc">
+            소유스캔은 조회 자체보다 “어떤 고객에게 시간을 써야 하는가”, “어떤 건을 먼저 검토해야 하는가”에 답하는 데이터 기반 업무 도구를 지향합니다.
+          </p>
+        </div>
+        <div class="vertical-line" aria-hidden="true"></div>
+      </section>
+
+      <section class="section" id="market" aria-labelledby="market-title">
+        <div class="section-head">
+          <span class="section-kicker">Market Research</span>
+          <h2 class="section-title" id="market-title">영업과 심사 현장에는 이미 자산 확인 수요가 있습니다.</h2>
+          <p class="section-desc">
+            고액 계약, 대출, 채권, 법률 업무에서는 상대방의 기초 자산 신호가 의사결정 속도와 비용을 바꿉니다. 소유스캔은 이 판단을 반복 가능한 시스템으로 전환합니다.
+          </p>
+        </div>
+        <div class="market-grid">
+          <article class="metric-card">
+            <div>
+              <div class="card-number">1</div>
+              <h3>무작위 영업의 낮은 전환율</h3>
+              <p>자산 신호 없이 상담과 미팅을 반복하면 고비용 고객 응대가 누적됩니다.</p>
+            </div>
+            <div class="metric-value">Target</div>
+          </article>
+          <article class="metric-card">
+            <div>
+              <div class="card-number">2</div>
+              <h3>사전 검증 없는 계약 리스크</h3>
+              <p>담보력, 채권 상태, 압류 여부를 뒤늦게 확인하면 거래 진행 비용이 커집니다.</p>
+            </div>
+            <div class="value-bar"><span></span></div>
+          </article>
+          <article class="metric-card">
+            <div>
+              <div class="card-number">3</div>
+              <h3>기관별 자체 시스템 수요</h3>
+              <p>금융기관, 법무법인, 영업조직은 내부 업무 흐름에 맞춘 API와 리포트를 필요로 합니다.</p>
+            </div>
+            <div class="metric-value">B2B</div>
+          </article>
+        </div>
+      </section>
+
+      <section class="pain-section" aria-labelledby="pain-title">
+        <div class="pain-inner">
+          <div class="interview-title">
+            <h2 id="pain-title">현장의 질문은 단순합니다.</h2>
+            <p>이 고객이 실제로 계약 가능성이 있는지, 이 건을 먼저 검토해도 되는지, 우리 시스템 안에서 바로 확인할 수 있는지가 중요합니다.</p>
+          </div>
+          <div class="quote-grid">
+            <article class="quote-card">
+              <div class="persona">보험·재무설계 조직</div>
+              <p class="quote">“VIP 고객에게 집중할 근거가 필요합니다.”</p>
+              <div class="needs">
+                <strong>NEEDS</strong>
+                <p>상속, 증여, 종신보험 상담 전에 자산 보유 여부를 빠르게 확인하고 싶습니다.</p>
+              </div>
+            </article>
+            <article class="quote-card">
+              <div class="persona">분양·프랜차이즈 영업팀</div>
+              <p class="quote">“허수 문의와 진성 고객을 구분해야 합니다.”</p>
+              <div class="needs">
+                <strong>NEEDS</strong>
+                <p>미팅 전 기초 담보력과 부동산 보유 신호를 보고 영업 우선순위를 정하고 싶습니다.</p>
+              </div>
+            </article>
+            <article class="quote-card">
+              <div class="persona">법무·채권 관리 조직</div>
+              <p class="quote">“조회 결과가 업무 시스템과 연결되어야 합니다.”</p>
+              <div class="needs">
+                <strong>NEEDS</strong>
+                <p>등기 기반 채권, 압류, 순위 정보를 내부 검토 프로세스와 API로 연동하고 싶습니다.</p>
+              </div>
+            </article>
+          </div>
+          <div class="bridge-cta">부동산 소유 현황을 확인하는 순간, 영업과 심사의 우선순위가 달라집니다.</div>
+        </div>
+      </section>
+
+      <section class="case-section" aria-labelledby="case-title">
+        <div class="section-head">
+          <span class="section-kicker">Customer Voice</span>
+          <h2 class="section-title" id="case-title">실제 업무에 적용하면 판단의 순서가 달라집니다.</h2>
+          <p class="section-desc">
+            기업별로 필요한 데이터 범위는 다르지만, 공통적으로는 영업 리소스 낭비를 줄이고 검토 우선순위를 빠르게 정하는 데 활용됩니다.
+          </p>
+        </div>
+        <div class="case-grid">
+          <article class="case-card">
+            <div class="case-top">
+              <div class="case-company">
+                <strong>H회사</strong>
+                <span>보험·재무설계 조직</span>
+              </div>
+              <img class="case-avatar h" src="m-1.webp" alt="" aria-hidden="true">
+            </div>
+            <p class="case-quote">“상담 전에 우선순위가 보여서 VIP 고객 응대가 선명해졌습니다.”</p>
+            <div class="case-body">
+              <h3>활용 후 변화</h3>
+              <p>상속·증여·종신보험 상담 전 부동산 보유 신호를 확인해 고액 상담 대상을 먼저 분류하고, 반복 미팅에 쓰던 시간을 줄이는 방향으로 운영할 수 있었습니다.</p>
+            </div>
+          </article>
+          <article class="case-card">
+            <div class="case-top">
+              <div class="case-company">
+                <strong>D사</strong>
+                <span>상업용 부동산 분양팀</span>
+              </div>
+              <img class="case-avatar d" src="m-2.webp" alt="" aria-hidden="true">
+            </div>
+            <p class="case-quote">“문의 고객이 실제 계약 가능성이 있는지 초기에 가늠할 수 있었습니다.”</p>
+            <div class="case-body">
+              <h3>활용 후 변화</h3>
+              <p>미팅 전 기초 자산과 담보 가능성을 확인해 단순 문의와 진성 가망 고객을 구분하고, 분양 상담의 우선순위를 더 빠르게 정리했습니다.</p>
+            </div>
+          </article>
+          <article class="case-card">
+            <div class="case-top">
+              <div class="case-company">
+                <strong>A사</strong>
+                <span>법무·채권 검토 조직</span>
+              </div>
+              <img class="case-avatar a" src="m-3.webp" alt="" aria-hidden="true">
+            </div>
+            <p class="case-quote">“채권 검토 전에 확인해야 할 자료가 한 흐름으로 정리됐습니다.”</p>
+            <div class="case-body">
+              <h3>활용 후 변화</h3>
+              <p>대출, 압류, 채권 순위 조회 항목을 케이스 검토 흐름에 맞춰 정리해 회수 가능성 판단과 후속 조치 논의를 더 빠르게 진행했습니다.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="solution" aria-labelledby="solution-title">
+        <div class="section-head">
+          <span class="section-kicker">Solution</span>
+          <h2 class="section-title" id="solution-title">소유스캔은 조회 도구가 아니라 B2B 업무 인프라입니다.</h2>
+          <p class="section-desc">
+            웹 기반 이용, 기업 API 연동, 맞춤형 자체 솔루션 구축까지 제공 범위를 나누어 기업의 현재 업무 환경에 맞게 도입할 수 있습니다.
+          </p>
+        </div>
+        <div class="solution-grid">
+          <article class="dark-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M4 20h16M6 20V9l6-4 6 4v11M9 13h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div>
+              <h3>부동산 소유 현황 조회</h3>
+              <p>생년월일 기반으로 국내 부동산 및 자산 보유 현황을 확인할 수 있는 조회 서비스를 제공합니다.</p>
+            </div>
+          </article>
+          <article class="dark-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M7 4h10l3 5-8 11L4 9l3-5zM4 9h16" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            </div>
+            <div>
+              <h3>대출·채권·압류 정보</h3>
+              <p>등기부등본 기반의 대출, 채권, 압류 정보와 채권 순위 조회를 업무 검토 자료로 연결합니다.</p>
+            </div>
+          </article>
+          <article class="dark-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M8 9l-4 3 4 3M16 9l4 3-4 3M14 5l-4 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div>
+              <h3>API 및 자체 구축</h3>
+              <p>기업 내부 CRM, 심사 시스템, 법무 관리 시스템과 연동하거나 독립형 솔루션으로 구축할 수 있습니다.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="api" aria-labelledby="api-title">
+        <div class="two-col">
+          <div class="api-panel">
+            <span class="section-kicker">B2B API Contract</span>
+            <h2 id="api-title">계약 범위에 맞춰 API, 플랫폼, 자체 솔루션 중 선택합니다.</h2>
+            <p>
+              API 이용계약서는 부동산 소유 현황 API, 등기 기반 대출·채권·압류 정보, B2B 연동 및 자체 플랫폼 구축 지원을 포함합니다. 요금과 제공 범위는 기업 목적, 조회량, 연동 수준에 따라 별도 협의합니다.
+            </p>
+            <div class="contract-list">
+              <div class="contract-row">
+                <div class="check" aria-hidden="true">✓</div>
+                <div><strong>API 이용 계약</strong><span>인증키 발급, 호출 정책, 조회 목적, 데이터 활용 범위를 계약서로 정의합니다.</span></div>
+              </div>
+              <div class="contract-row">
+                <div class="check" aria-hidden="true">✓</div>
+                <div><strong>서비스 이용</strong><span>웹·모바일 기반 플랫폼을 통해 내부 담당자가 직접 조회하고 결과를 확인합니다.</span></div>
+              </div>
+              <div class="contract-row">
+                <div class="check" aria-hidden="true">✓</div>
+                <div><strong>자체 솔루션 제작</strong><span>기업의 심사, 영업, 채권, 법무 프로세스에 맞춘 독립형 시스템을 구축합니다.</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="flow" aria-label="도입 절차">
+            <article class="flow-step">
+              <div class="flow-num">01</div>
+              <div><h3>업무 목적 확인</h3><p>영업 선별, 여신 심사, 채권 검토, 법률 업무 등 사용 목적과 조회 주체를 정리합니다.</p></div>
+            </article>
+            <article class="flow-step">
+              <div class="flow-num">02</div>
+              <div><h3>데이터 범위 협의</h3><p>소유 현황, 대출, 채권, 압류, 채권 순위 등 필요한 조회 항목과 리포트 형식을 정의합니다.</p></div>
+            </article>
+            <article class="flow-step">
+              <div class="flow-num">03</div>
+              <div><h3>연동 방식 설계</h3><p>API 호출, 관리자 대시보드, 자체 플랫폼 납품 중 기업 환경에 맞는 방식을 설계합니다.</p></div>
+            </article>
+            <article class="flow-step">
+              <div class="flow-num">04</div>
+              <div><h3>계약 및 운영</h3><p>법적 책임, 개인정보 동의, 인증키 관리, 결제 및 운영 조건을 계약서에 반영합니다.</p></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="targets" aria-labelledby="targets-title">
+        <div class="section-head">
+          <span class="section-kicker">Use Case</span>
+          <h2 class="section-title" id="targets-title">고객의 자산 규모가 성과와 리스크를 바꾸는 조직에 적합합니다.</h2>
+        </div>
+        <div class="target-grid">
+          <article class="target-card">
+            <span class="tag">01</span>
+            <h3>보험·재무설계</h3>
+            <p>고액 자산가 상담, 상속·증여 컨설팅, VIP 고객 선별에 필요한 기초 자산 신호를 확보합니다.</p>
+          </article>
+          <article class="target-card">
+            <span class="tag">02</span>
+            <h3>프랜차이즈·분양</h3>
+            <p>예비 창업자와 투자자의 담보력, 자금 여력, 계약 가능성을 사전에 검토합니다.</p>
+          </article>
+          <article class="target-card">
+            <span class="tag">03</span>
+            <h3>금융·카드·여신</h3>
+            <p>내부 심사와 채권 관리 업무에서 부동산 소유 및 권리 정보를 보조 지표로 활용합니다.</p>
+          </article>
+          <article class="target-card">
+            <span class="tag">04</span>
+            <h3>법무법인·채권관리</h3>
+            <p>소송, 회수, 압류 검토 과정에서 조회 결과를 케이스 관리 시스템과 연결합니다.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="pricing-band" id="pricing" aria-labelledby="pricing-title">
+        <div class="pricing-inner">
+          <div>
+            <span class="section-kicker">Pricing</span>
+            <h2 class="section-title" id="pricing-title">가격은 모두 문의 기준으로 운영합니다.</h2>
+            <p class="section-desc">
+              조회 범위, 월 조회량, API 호출 정책, 커스터마이징 수준, 내부 시스템 연동 방식에 따라 계약 조건이 달라집니다.
+            </p>
+            <div class="legal-note">
+              제3자의 부동산·자산 현황 등 개인정보 조회가 포함되는 경우, 적법한 조회 목적과 사전 동의 확보 여부는 계약 단계에서 반드시 확인해야 합니다.
+            </div>
+          </div>
+          <div class="price-box">
+            <h3>기업 도입 패키지</h3>
+            <span class="price">문의</span>
+            <p>API 이용 계약, 서비스 이용, 자체 솔루션 제작 요청을 선택해 문의할 수 있습니다. 접수된 문의는 추후 메일 전달 방식과 연동할 예정입니다.</p>
+            <div style="margin-top: 28px;">
+              <button class="btn js-open-inquiry" type="button">도입 문의 작성</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section final-cta" aria-labelledby="final-title">
+        <h2 id="final-title">고객 자산 신호를 기업의 다음 액션으로 연결하세요.</h2>
+        <p>
+          소유스캔은 단순 조회 페이지가 아니라, 영업과 심사 조직이 더 빠르게 판단하고 더 정확하게 리소스를 배분하도록 돕는 B2B 인프라입니다.
+        </p>
+        <button class="btn js-open-inquiry" type="button">문의하기</button>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <div>소유스캔 · B2B 부동산 소유 현황 API</div>
+        <div>가격 및 계약 조건은 기업별 문의 후 협의</div>
+      </div>
+    </footer>
+  </div>
+
+  <div class="modal" id="inquiryModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-card" role="document">
+      <div class="modal-head">
+        <div>
+          <h2 id="modalTitle">도입 문의</h2>
+          <p>기업 정보와 희망 이용 방식을 남겨주시면 계약 범위 검토 후 안내할 수 있도록 구성했습니다.</p>
+        </div>
+        <button class="close-btn js-close-inquiry" type="button" aria-label="문의 창 닫기">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <form class="inquiry-form" id="inquiryForm">
+        <div class="form-grid">
+          <div class="field">
+            <label for="company">회사명</label>
+            <input id="company" name="company" type="text" autocomplete="organization" required>
+          </div>
+          <div class="field">
+            <label for="manager">담당자명</label>
+            <input id="manager" name="manager" type="text" autocomplete="name" required>
+          </div>
+          <div class="field">
+            <label for="role">담당자 직책</label>
+            <input id="role" name="role" type="text" autocomplete="organization-title" required>
+          </div>
+          <div class="field">
+            <label for="phone">담당자 연락처</label>
+            <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="010-0000-0000" required>
+          </div>
+          <div class="field full">
+            <label for="requestType">문의 유형</label>
+            <select id="requestType" name="requestType" required>
+              <option value="">선택해주세요</option>
+              <option>API 계약</option>
+              <option>서비스 이용</option>
+              <option>해당 기능을 가진 자체 솔루션 제작 요청</option>
+            </select>
+          </div>
+          <div class="field full">
+            <label for="memo">메모</label>
+            <textarea id="memo" name="memo" placeholder="도입 목적, 예상 조회량, 연동 희망 시스템, 필요한 데이터 범위 등을 입력해주세요."></textarea>
+          </div>
+        </div>
+
+        <label class="consent">
+          <input id="consent" name="consent" type="checkbox" required>
+          <span>
+            <span class="consent-label">개인정보 수집 및 이용에 동의합니다.</span>
+            <p>문의 응대와 계약 검토를 위해 회사명, 담당자명, 직책, 연락처, 문의 유형, 메모 내용을 수집합니다. 추후 메일 전달 시스템과 연동될 예정입니다.</p>
+            <a class="consent-detail" href="privacy.html" target="_blank" rel="noopener">자세히 보기</a>
+          </span>
+        </label>
+
+        <div class="form-actions">
+          <p class="form-note">현재 페이지에서는 문의 내용을 브라우저에서 접수 확인만 하며, 메일 전송 기능은 추후 연결 예정입니다.</p>
+          <button class="btn" type="submit">문의 제출</button>
+        </div>
+        <div class="form-status" id="formStatus" role="status" aria-live="polite">
+          문의 내용이 접수 형식으로 정리되었습니다. 메일 전송 기능 연결 시 이 항목들이 그대로 전달됩니다.
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <button class="floating-top" id="floatingTop" type="button" aria-label="상단으로 이동">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 19V5M6 11l6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+
+  <div class="toast" id="inquiryToast" role="status" aria-live="polite">
+    문의가 접수되었습니다. 영업일 기준 48시간 안에 연락드리겠습니다.
+  </div>
+
+  <script>
+    const header = document.querySelector('.site-header');
+    const modal = document.getElementById('inquiryModal');
+    const form = document.getElementById('inquiryForm');
+    const formStatus = document.getElementById('formStatus');
+    const toast = document.getElementById('inquiryToast');
+    const floatingTop = document.getElementById('floatingTop');
+    let lastFocused = null;
+    let toastTimer = null;
+
+    function syncScrollState() {
+      const isScrolled = window.scrollY > 24;
+      header.classList.toggle('is-scrolled', isScrolled);
+      floatingTop.classList.toggle('is-visible', window.scrollY > 520);
+    }
+
+    function showToast() {
+      clearTimeout(toastTimer);
+      toast.classList.add('is-visible');
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('is-visible');
+      }, 4200);
+    }
+
+    function openInquiry() {
+      lastFocused = document.activeElement;
+      formStatus.classList.remove('is-visible');
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('modal-open');
+      setTimeout(() => document.getElementById('company').focus(), 0);
+    }
+
+    function closeInquiry() {
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('modal-open');
+      if (lastFocused) lastFocused.focus();
+    }
+
+    document.querySelectorAll('.js-open-inquiry').forEach((button) => {
+      button.addEventListener('click', openInquiry);
+    });
+
+    document.querySelectorAll('.js-close-inquiry').forEach((button) => {
+      button.addEventListener('click', closeInquiry);
+    });
+
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) closeInquiry();
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && modal.classList.contains('is-open')) closeInquiry();
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const data = Object.fromEntries(new FormData(form).entries());
+      console.info('소유스캔 문의 데이터', data);
+      formStatus.classList.add('is-visible');
+      showToast();
+      closeInquiry();
+      form.reset();
+    });
+
+    floatingTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    window.addEventListener('scroll', syncScrollState, { passive: true });
+    syncScrollState();
+  </script>
+</body>
+</html>
