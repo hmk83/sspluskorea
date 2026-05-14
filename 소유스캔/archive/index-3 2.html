@@ -220,57 +220,6 @@
       background-clip: text;
       color: transparent;
     }
-    .lookup-status {
-      margin-top: 22px;
-      padding: 16px;
-      border-radius: 20px;
-      background: rgba(0, 113, 227, .08);
-      border: 1px solid rgba(0, 113, 227, .1);
-    }
-    .lookup-status strong {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      color: #1d1d1f;
-      font-size: 14px;
-      font-weight: 850;
-    }
-    .lookup-status strong span {
-      color: #0071e3;
-      white-space: nowrap;
-    }
-    .lookup-meter {
-      position: relative;
-      height: 8px;
-      margin-top: 13px;
-      overflow: hidden;
-      border-radius: 999px;
-      background: rgba(0, 113, 227, .12);
-    }
-    .lookup-meter i {
-      position: absolute;
-      inset: 0 auto 0 0;
-      width: 74%;
-      border-radius: inherit;
-      background: linear-gradient(90deg, #0071e3, #5ac8fa);
-      animation: apple-lookup 2.8s ease-in-out infinite;
-    }
-    .lookup-list {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-      margin-top: 12px;
-      color: #6e6e73;
-      font-size: 12px;
-      font-weight: 750;
-    }
-    .lookup-list span {
-      padding: 8px;
-      border-radius: 12px;
-      background: rgba(255,255,255,.72);
-      text-align: center;
-    }
     .pill-list {
       display: grid;
       gap: 12px;
@@ -302,10 +251,6 @@
       font-size: 30px;
       font-weight: 950;
       transform: rotate(-10deg);
-    }
-    @keyframes apple-lookup {
-      0%, 100% { width: 58%; }
-      48% { width: 90%; }
     }
 
     .section {
@@ -447,21 +392,11 @@
         #000;
     }
     .code-card {
-      position: relative;
       border-radius: 22px;
       background: rgba(0,0,0,.44);
       border: 1px solid rgba(255,255,255,.12);
       padding: 24px;
       overflow: auto;
-    }
-    .code-card::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(105deg, transparent 0%, rgba(0,113,227,.16) 48%, transparent 64%);
-      transform: translateX(-120%);
-      animation: code-scan 3.6s ease-in-out infinite;
-      pointer-events: none;
     }
     .dots { display: flex; gap: 8px; margin-bottom: 22px; }
     .dots i { width: 10px; height: 10px; border-radius: 50%; background: #5a5a61; }
@@ -472,33 +407,6 @@
       line-height: 1.8;
       font-family: "SFMono-Regular", Consolas, monospace;
     }
-    .typing-code {
-      position: relative;
-      z-index: 1;
-      min-height: 178px;
-      white-space: pre-wrap;
-    }
-    .typing-code::after {
-      content: "";
-      display: inline-block;
-      width: .55ch;
-      height: 1.08em;
-      margin-left: 3px;
-      background: #69b7ff;
-      box-shadow: 0 0 16px rgba(105, 183, 255, .58);
-      vertical-align: -.17em;
-      animation: cursor-blink .9s steps(2, start) infinite;
-    }
-    .typing-code.is-done::after { opacity: .45; }
-    @keyframes code-scan {
-      0%, 32% { transform: translateX(-120%); opacity: 0; }
-      48% { opacity: 1; }
-      72%, 100% { transform: translateX(120%); opacity: 0; }
-    }
-    @keyframes cursor-blink {
-      0%, 48% { opacity: 1; }
-      49%, 100% { opacity: 0; }
-    }
 
     .voice-wrap {
       background: #fbfbfd;
@@ -506,7 +414,14 @@
       border-radius: 0;
       padding: 76px 0;
     }
+    .voice-wrap h2 {
+      font-size: clamp(26px, 2.4vw, 34px);
+    }
     .voice-wrap .subcopy { color: #606067; }
+    .voice-wrap .subcopy {
+      font-size: 14px;
+      line-height: 1.6;
+    }
     .voice-filter {
       display: flex;
       flex-wrap: wrap;
@@ -522,7 +437,7 @@
       border-radius: 999px;
       padding: 11px 16px;
       font: inherit;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 850;
       cursor: pointer;
     }
@@ -539,12 +454,12 @@
       border: 1px solid rgba(0,0,0,.06);
     }
     .voice-grid {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
     .memoji {
-      width: 92px;
-      height: 92px;
-      border-radius: 34px;
+      width: 76px;
+      height: 76px;
+      border-radius: 28px;
       display: block;
       object-fit: cover;
       object-position: center top;
@@ -577,19 +492,24 @@
     .company {
       margin-top: 18px;
       color: #5f6368;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 800;
     }
     .quote {
       margin-top: 16px;
       color: #1d1d1f;
-      font-size: 16px;
-      line-height: 1.55;
+      font-size: 14px;
+      line-height: 1.5;
       font-weight: 950;
     }
     .voice-card p { color: #5f6368; }
     .voice-detail {
-      display: none;
+      display: block;
+      margin-top: 12px;
+      color: #6e6e73;
+      font-size: 12px;
+      line-height: 1.55;
+      font-weight: 650;
     }
     .voice-actions {
       display: flex;
@@ -684,24 +604,6 @@
       color: var(--dim);
       font-size: 13px;
       border-top: 1px solid rgba(255,255,255,.08);
-    }
-    .footer-inner {
-      width: min(1180px, 100%);
-      margin: 0 auto;
-      display: grid;
-      gap: 8px;
-      line-height: 1.6;
-      font-weight: 650;
-    }
-    .footer-line {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 6px 16px;
-    }
-    .footer-copy {
-      margin-top: 4px;
-      color: rgba(29, 29, 31, .5);
     }
 
     .modal {
@@ -842,10 +744,6 @@
       .hero-copy, .subcopy { max-width: 330px; font-size: 14px; line-height: 1.58; word-break: keep-all; overflow-wrap: break-word; }
       .screen-panel h3 { font-size: 19px; line-height: 1.22; word-break: keep-all; overflow-wrap: break-word; }
       .screen-panel p { font-size: 14px; word-break: keep-all; overflow-wrap: break-word; }
-      .lookup-status { padding: 13px; border-radius: 17px; }
-      .lookup-status strong { display: block; }
-      .lookup-status strong span { display: block; margin-top: 4px; }
-      .lookup-list { grid-template-columns: 1fr; }
       .voice-grid { grid-template-columns: 1fr; }
       .device-stage { min-height: 560px; margin-top: 46px; }
       .device {
@@ -901,16 +799,8 @@
               <div class="screen-panel">
                 <h3>Property Ownership Intelligence</h3>
                 <p>고객의 부동산 보유 신호와 등기 리스크를 기업 업무에 맞는 언어로 정리합니다.</p>
-                <div class="big-metric">78%</div>
-                <div class="lookup-status" aria-label="조회 진행 상태 예시">
-                  <strong>소유 현황 조회 중 <span>매칭 진행</span></strong>
-                  <div class="lookup-meter" aria-hidden="true"><i></i></div>
-                  <div class="lookup-list">
-                    <span>입력 확인</span>
-                    <span>소유 매칭</span>
-                    <span>리스크 요약</span>
-                  </div>
-                </div>
+                <div class="big-metric">48h</div>
+                <p>도입 문의 후 영업일 기준 48시간 안에 상담을 연결합니다.</p>
               </div>
               <div class="screen-panel">
                 <h3>조회 기준</h3>
@@ -964,15 +854,15 @@
     </section>
 
     <section class="section center" id="pain-title" aria-labelledby="pain-heading">
-      <div class="kicker">Interview</div>
-      <h2 id="pain-heading">핵심 질문은 세 가지입니다.</h2>
-      <p class="subcopy">계약 가능성, 회수 가능성, 시스템 연동 가능성</p>
+      <div class="kicker">Governance</div>
+      <h2 id="pain-heading">도입 전 확인할 운영 기준</h2>
+      <p class="subcopy">개인정보 조회 목적, 데이터 활용 범위, 운영 권한을 계약 단계에서 명확히 정리합니다.</p>
       <div class="tile-grid">
-        <article class="tile light centered"><h3>VIP 선별</h3><p>고액 상담 전 소유 현황과 기초 자산 신호를 확인해 우선 상담 대상을 분류합니다.</p></article>
-        <article class="tile light centered"><h3>진성 고객 판별</h3><p>초기 문의자의 담보 여력과 부동산 보유 가능성을 검토해 영업 리소스를 집중합니다.</p></article>
-        <article class="tile light centered"><h3>시스템 연동</h3><p>등기 기반 권리 정보를 CRM, 심사, 채권 관리 프로세스에 연결해 검토 기준을 통일합니다.</p></article>
+        <article class="tile light centered"><h3>조회 목적과 동의</h3><p>개인정보 조회 목적과 사전 동의 확보 절차를 계약 단계에서 확인합니다.</p></article>
+        <article class="tile light centered"><h3>데이터 활용 범위</h3><p>소유 현황, 등기 리스크, 리포트 항목 중 필요한 필드만 정의합니다.</p></article>
+        <article class="tile light centered"><h3>권한과 로그 관리</h3><p>API 키, 담당자 권한, 조회 로그 보존 기준을 내부 정책에 맞춥니다.</p></article>
       </div>
-      <p class="mini-note">자산 확인이 다음 액션의 우선순위를 만듭니다.</p>
+      <p class="mini-note">운영 기준을 먼저 정리해야 API와 서비스 도입 범위가 명확해집니다.</p>
     </section>
 
     <section class="section" id="api" aria-labelledby="api-title">
@@ -984,12 +874,12 @@
         </div>
         <div class="code-card">
           <div class="dots"><i></i><i></i><i></i></div>
-          <pre class="typing-code" data-typing-code>POST /v1/ownership/search
+          <pre>POST /v1/ownership/search
 {
   "name": "client",
   "birthDate": "YYYY-MM-DD",
   "purpose": "b2b_due_diligence",
-  "response": ["ownership", "registryRisk"]
+          "response": ["ownership", "registryRisk"]
 }</pre>
         </div>
       </div>
@@ -1006,136 +896,137 @@
         <div class="section center" style="width:100%; padding:0">
           <div class="kicker">Customer Voice</div>
           <h2 id="voice-title">업종별 활용 사례</h2>
-          <p class="subcopy">소유·권리 정보가 영업, 심사, 회수 판단에 어떻게 쓰이는지 확인하세요.</p>
+          <p class="subcopy">필터로 업종을 바꿔 보며 필요한 활용 장면만 빠르게 확인합니다.</p>
         </div>
         <div class="voice-filter" aria-label="후기 업종 필터">
           <button class="filter-pill is-active" type="button" data-filter="all">전체</button>
-          <button class="filter-pill" type="button" data-filter="debt">채권·신용정보</button>
-          <button class="filter-pill" type="button" data-filter="law">법무법인</button>
-          <button class="filter-pill" type="button" data-filter="finance">카드·캐피탈·금융</button>
-          <button class="filter-pill" type="button" data-filter="investigation">탐정·조사</button>
-          <button class="filter-pill" type="button" data-filter="sales">보험·분양·영업</button>
+          <button class="filter-pill" type="button" data-filter="debt">채권</button>
+          <button class="filter-pill" type="button" data-filter="law">법무</button>
+          <button class="filter-pill" type="button" data-filter="finance">금융</button>
+          <button class="filter-pill" type="button" data-filter="investigation">조사</button>
+          <button class="filter-pill" type="button" data-filter="sales">영업</button>
+          <button class="filter-pill" type="button" data-filter="solution">연동</button>
         </div>
         <div class="tile-grid voice-grid">
           <article class="tile voice-card" data-category="debt">
-            <img class="memoji" src="images/m-4.webp" alt="" aria-hidden="true">
-            <div class="company">A채권사 · 채권관리팀</div>
-            <div class="quote">회수 가능성을 검토하기 전에 확인해야 할 자산 신호가 빨라졌습니다.</div>
-            <div class="voice-detail">연체 계정별 부동산 보유 여부와 권리 리스크를 먼저 확인해, 담당자가 집중해야 할 회수 후보를 빠르게 추렸습니다.</div>
-          </article>
-          <article class="tile voice-card" data-category="debt">
-            <img class="memoji" src="images/m-5.webp" alt="" aria-hidden="true">
-            <div class="company">H채권사 · NPL 검토팀</div>
-            <div class="quote">담보 여력과 권리관계를 먼저 보고 케이스 우선순위를 정할 수 있었습니다.</div>
-            <div class="voice-detail">매입 검토 단계에서 소유 신호와 압류 가능성을 함께 확인해 실익이 낮은 건을 초기에 제외했습니다.</div>
-          </article>
-          <article class="tile voice-card" data-category="debt">
-            <img class="memoji" src="images/m-6.webp" alt="" aria-hidden="true">
-            <div class="company">K채권관리 · 현장추심팀</div>
-            <div class="quote">무작정 연락하기보다 검토 가치가 있는 건부터 정리하는 데 도움이 됐습니다.</div>
-            <div class="voice-detail">담당자 배정 전에 고객별 자산 단서를 확인해 현장 확인이 필요한 대상을 명확히 구분했습니다.</div>
-          </article>
-          <article class="tile voice-card" data-category="debt">
-            <img class="memoji" src="images/m-7.webp" alt="" aria-hidden="true">
-            <div class="company">D신용정보 · 조사팀</div>
-            <div class="quote">조회 결과를 바탕으로 다음 조사 방향을 빠르게 좁힐 수 있었습니다.</div>
-            <div class="voice-detail">기본 인적 정보에서 부동산 보유 가능성을 먼저 확인하고 추가 조사 범위를 효율적으로 설계했습니다.</div>
+            <img class="memoji blue" src="m-1.webp" alt="" aria-hidden="true">
+            <div class="company">H회사 · 채권관리팀</div>
+            <div class="quote">회수 가능성 판단이 빨라졌습니다.</div>
+            <div class="voice-detail">담보 신호를 먼저 확인해 검토 순서를 정했습니다.</div>
           </article>
           <article class="tile voice-card" data-category="law">
-            <img class="memoji" src="images/m-8.webp" alt="" aria-hidden="true">
-            <div class="company">B법무법인 · 송무팀</div>
-            <div class="quote">소송 전 검토 단계에서 부동산 보유 여부를 확인하는 시간이 줄었습니다.</div>
-            <div class="voice-detail">청구 실익을 판단하기 전 필요한 기초 자산 신호를 빠르게 정리해 의뢰인 안내 속도가 좋아졌습니다.</div>
-          </article>
-          <article class="tile voice-card" data-category="law">
-            <img class="memoji" src="images/m-9.webp" alt="" aria-hidden="true">
-            <div class="company">L법무법인 · 집행팀</div>
-            <div class="quote">강제집행 가능성을 판단하기 전 필요한 기초 자료가 한눈에 정리됐습니다.</div>
-            <div class="voice-detail">집행 검토 단계에서 소유 현황과 권리 리스크를 함께 보며 후속 절차의 우선순위를 세웠습니다.</div>
-          </article>
-          <article class="tile voice-card" data-category="law">
-            <img class="memoji" src="images/m-10.webp" alt="" aria-hidden="true">
-            <div class="company">Y법률사무소 · 채권소송팀</div>
-            <div class="quote">채무자별 후속 조치 우선순위를 정하는 기준이 더 분명해졌습니다.</div>
-            <div class="voice-detail">소송 진행 전후로 자산 보유 단서를 확인해 합의, 집행, 추가 조사 중 어떤 액션을 먼저 할지 정리했습니다.</div>
+            <img class="memoji " src="m-2.webp" alt="" aria-hidden="true">
+            <div class="company">D사 · 법무/채권 검토 조직</div>
+            <div class="quote">필요 자료가 한 흐름으로 정리됐습니다.</div>
+            <div class="voice-detail">등기 리스크와 채권 순위를 케이스별로 묶었습니다.</div>
           </article>
           <article class="tile voice-card" data-category="finance">
-            <img class="memoji" src="images/m-11.webp" alt="" aria-hidden="true">
-            <div class="company">C카드사 · 리스크관리팀</div>
-            <div class="quote">연체 고객군을 나눠 후속 대응 전략을 세우는 데 활용하고 있습니다.</div>
-            <div class="voice-detail">고객군별 자산 신호를 참고해 상담, 조정, 법적 절차 검토 대상을 더 체계적으로 분류했습니다.</div>
-          </article>
-          <article class="tile voice-card" data-category="finance">
-            <img class="memoji" src="images/m-12.webp" alt="" aria-hidden="true">
-            <div class="company">M캐피탈 · 여신관리팀</div>
-            <div class="quote">심사 이후 관리 단계에서 부동산 자산 신호를 보조 지표로 쓸 수 있었습니다.</div>
-            <div class="voice-detail">계약 이후 변동 리스크를 점검할 때 소유 현황 단서를 함께 확인해 사후관리 기준을 보완했습니다.</div>
-          </article>
-          <article class="tile voice-card" data-category="finance">
-            <img class="memoji" src="images/m-13.webp" alt="" aria-hidden="true">
-            <div class="company">P캐피탈 · 회수전략팀</div>
-            <div class="quote">계정별 회수 가능성을 빠르게 분류해 담당자 배정이 쉬워졌습니다.</div>
-            <div class="voice-detail">월별 관리 대상 중 우선 검토가 필요한 계정을 골라내고, 담당자별 업무량을 더 균형 있게 나눴습니다.</div>
-          </article>
-          <article class="tile voice-card" data-category="finance">
-            <img class="memoji" src="images/m-14.webp" alt="" aria-hidden="true">
-            <div class="company">R저축은행 · 여신심사팀</div>
-            <div class="quote">대출 검토 전 고객의 기초 자산 상황을 파악하는 흐름이 단순해졌습니다.</div>
-            <div class="voice-detail">심사 자료를 받기 전 단계에서 부동산 보유 신호를 확인해 상담 준비와 추가 요청 항목을 줄였습니다.</div>
-          </article>
-          <article class="tile voice-card" data-category="finance">
-            <img class="memoji" src="images/m-15.webp" alt="" aria-hidden="true">
-            <div class="company">S금융사 · 사후관리팀</div>
-            <div class="quote">사후 모니터링 대상자를 정리할 때 참고할 수 있는 기준이 생겼습니다.</div>
-            <div class="voice-detail">정기 점검 대상 중 자산 신호가 있는 고객을 먼저 확인해 관리 리포트의 우선순위를 조정했습니다.</div>
+            <img class="memoji gold" src="m-3.webp" alt="" aria-hidden="true">
+            <div class="company">A사 · 금융/여신관리팀</div>
+            <div class="quote">사후관리 기준이 명확해졌습니다.</div>
+            <div class="voice-detail">고객별 소유 신호로 관리 대상을 분류했습니다.</div>
           </article>
           <article class="tile voice-card" data-category="investigation">
-            <img class="memoji" src="images/m-16.webp" alt="" aria-hidden="true">
-            <div class="company">T탐정사무소 · 민사조사팀</div>
-            <div class="quote">의뢰 건의 실익을 검토할 때 부동산 보유 신호가 중요한 판단 자료가 됐습니다.</div>
-            <div class="voice-detail">조사 착수 전 확인 가능한 자산 단서를 기준으로 의뢰 범위와 예상 소요 시간을 더 현실적으로 안내했습니다.</div>
+            <img class="memoji blue" src="m-4.webp" alt="" aria-hidden="true">
+            <div class="company">Q사 · 재산조사팀</div>
+            <div class="quote">조사 방향을 빠르게 좁혔습니다.</div>
+            <div class="voice-detail">기초 정보만으로 보유 가능성을 먼저 확인했습니다.</div>
+          </article>
+          <article class="tile voice-card" data-category="sales">
+            <img class="memoji " src="m-5.webp" alt="" aria-hidden="true">
+            <div class="company">F사 · 보험/재무설계 조직</div>
+            <div class="quote">VIP 상담 대상을 먼저 선별했습니다.</div>
+            <div class="voice-detail">상속·증여 상담 전 우선순위를 정했습니다.</div>
+          </article>
+          <article class="tile voice-card" data-category="solution">
+            <img class="memoji gold" src="m-6.webp" alt="" aria-hidden="true">
+            <div class="company">J사 · CRM 운영팀</div>
+            <div class="quote">조회 결과를 내부 시스템에 연결했습니다.</div>
+            <div class="voice-detail">API 범위와 관리자 화면 구성을 함께 정했습니다.</div>
+          </article>
+          <article class="tile voice-card" data-category="finance">
+            <img class="memoji blue" src="m-7.webp" alt="" aria-hidden="true">
+            <div class="company">K사 · 카드/심사 운영팀</div>
+            <div class="quote">심사 전 확인 항목이 줄었습니다.</div>
+            <div class="voice-detail">반복 확인하던 자산 신호를 리포트로 통합했습니다.</div>
+          </article>
+          <article class="tile voice-card" data-category="law">
+            <img class="memoji " src="m-8.webp" alt="" aria-hidden="true">
+            <div class="company">L사 · 법무법인 송무팀</div>
+            <div class="quote">소송 검토 자료가 빨리 모였습니다.</div>
+            <div class="voice-detail">압류·권리 관계를 초기 상담 자료로 정리했습니다.</div>
+          </article>
+          <article class="tile voice-card" data-category="debt">
+            <img class="memoji gold" src="m-9.webp" alt="" aria-hidden="true">
+            <div class="company">M사 · NPL 검토팀</div>
+            <div class="quote">우선 회수 대상을 구분했습니다.</div>
+            <div class="voice-detail">보유 신호와 채권 순위를 함께 확인했습니다.</div>
+          </article>
+          <article class="tile voice-card" data-category="sales">
+            <img class="memoji blue" src="m-10.webp" alt="" aria-hidden="true">
+            <div class="company">N사 · 분양 상담팀</div>
+            <div class="quote">상담 전 고객 맥락이 보였습니다.</div>
+            <div class="voice-detail">자산 신호를 바탕으로 상담 난도를 나눴습니다.</div>
+          </article>
+          <article class="tile voice-card" data-category="solution">
+            <img class="memoji " src="m-11.webp" alt="" aria-hidden="true">
+            <div class="company">P사 · 내부시스템팀</div>
+            <div class="quote">리포트가 CRM 안으로 들어왔습니다.</div>
+            <div class="voice-detail">조회 결과를 기존 업무 화면에 연결했습니다.</div>
           </article>
           <article class="tile voice-card" data-category="investigation">
-            <img class="memoji" src="images/m-17.webp" alt="" aria-hidden="true">
-            <div class="company">Q조사법인 · 재산조사팀</div>
-            <div class="quote">기초 정보만으로 조사 방향을 먼저 세울 수 있어 불필요한 확인이 줄었습니다.</div>
-            <div class="voice-detail">반복적으로 확인하던 후보 정보를 줄이고, 실제 후속 확인이 필요한 대상에 조사 시간을 집중했습니다.</div>
+            <img class="memoji gold" src="m-12.webp" alt="" aria-hidden="true">
+            <div class="company">R사 · 리스크 조사팀</div>
+            <div class="quote">검토 시작점이 명확해졌습니다.</div>
+            <div class="voice-detail">초기 조사에서 필요한 단서를 먼저 좁혔습니다.</div>
+          </article>
+          <article class="tile voice-card" data-category="finance">
+            <img class="memoji blue" src="m-13.webp" alt="" aria-hidden="true">
+            <div class="company">S사 · 여신기획팀</div>
+            <div class="quote">보조 지표가 일관돼졌습니다.</div>
+            <div class="voice-detail">부동산 소유 신호를 심사 참고값으로 정리했습니다.</div>
+          </article>
+          <article class="tile voice-card" data-category="law">
+            <img class="memoji " src="m-14.webp" alt="" aria-hidden="true">
+            <div class="company">T사 · 송무지원팀</div>
+            <div class="quote">자료 요청 시간이 줄었습니다.</div>
+            <div class="voice-detail">권리 리스크 요약을 사건 검토 전에 확인했습니다.</div>
+          </article>
+          <article class="tile voice-card" data-category="debt">
+            <img class="memoji gold" src="m-15.webp" alt="" aria-hidden="true">
+            <div class="company">U사 · 채권전략팀</div>
+            <div class="quote">회수 전략을 빠르게 나눴습니다.</div>
+            <div class="voice-detail">소유 가능성에 따라 후속 절차를 분리했습니다.</div>
           </article>
           <article class="tile voice-card" data-category="sales">
-            <img class="memoji" src="images/m-18.webp" alt="" aria-hidden="true">
-            <div class="company">F보험GA · 지점장</div>
-            <div class="quote">상속·증여 상담 가능성이 있는 고객을 먼저 선별하는 데 도움이 됐습니다.</div>
-            <div class="voice-detail">담당 설계사들이 고액 상담 후보를 같은 기준으로 분류하면서 지점 차원의 상담 배정이 쉬워졌습니다.</div>
+            <img class="memoji blue" src="m-16.webp" alt="" aria-hidden="true">
+            <div class="company">V사 · 프랜차이즈 영업팀</div>
+            <div class="quote">가망 고객 분류가 쉬워졌습니다.</div>
+            <div class="voice-detail">창업 문의자의 담보 가능성을 먼저 봤습니다.</div>
           </article>
-          <article class="tile voice-card" data-category="sales">
-            <img class="memoji" src="images/m-19.webp" alt="" aria-hidden="true">
-            <div class="company">W재무설계법인 · VIP상담팀</div>
-            <div class="quote">고액 상담 대상을 구분하면서 상담 준비의 밀도가 높아졌습니다.</div>
-            <div class="voice-detail">고객별 자산 신호를 미리 확인해 제안서 방향과 상담 질문을 더 구체적으로 준비했습니다.</div>
+          <article class="tile voice-card" data-category="solution">
+            <img class="memoji " src="m-17.webp" alt="" aria-hidden="true">
+            <div class="company">W사 · 데이터플랫폼팀</div>
+            <div class="quote">API 설계 범위가 줄었습니다.</div>
+            <div class="voice-detail">필요 필드만 추려 연동 범위를 확정했습니다.</div>
           </article>
-          <article class="tile voice-card" data-category="sales">
-            <img class="memoji" src="images/m-20.webp" alt="" aria-hidden="true">
-            <div class="company">N프랜차이즈본사 · 가맹개발팀</div>
-            <div class="quote">창업 문의 중 실제 자금 여력이 있는 고객을 초기에 가늠할 수 있었습니다.</div>
-            <div class="voice-detail">초기 상담 전에 담보력과 자산 보유 신호를 확인해 가맹 상담의 우선순위를 빠르게 정리했습니다.</div>
+          <article class="tile voice-card" data-category="investigation">
+            <img class="memoji gold" src="m-18.webp" alt="" aria-hidden="true">
+            <div class="company">X사 · 실사 운영팀</div>
+            <div class="quote">현장 확인 전 판단이 빨라졌습니다.</div>
+            <div class="voice-detail">조회 결과로 실사 우선순위를 정했습니다.</div>
           </article>
-          <article class="tile voice-card" data-category="sales">
-            <img class="memoji" src="images/m-21.webp" alt="" aria-hidden="true">
-            <div class="company">E분양대행사 · 상업시설팀</div>
-            <div class="quote">단순 문의와 계약 가능 고객을 구분해 미팅 일정을 더 효율적으로 잡았습니다.</div>
-            <div class="voice-detail">분양 문의자 중 실질 검토 가능성이 높은 대상을 먼저 선별해 현장 방문과 상담 일정을 조정했습니다.</div>
+          <article class="tile voice-card" data-category="finance">
+            <img class="memoji blue" src="m-19.webp" alt="" aria-hidden="true">
+            <div class="company">Y사 · 고객관리팀</div>
+            <div class="quote">사후관리 리스트가 정리됐습니다.</div>
+            <div class="voice-detail">자산 신호 기준으로 관리군을 다시 나눴습니다.</div>
           </article>
-          <article class="tile voice-card" data-category="sales">
-            <img class="memoji" src="images/m-22.webp" alt="" aria-hidden="true">
-            <div class="company">G기업영업팀 · B2B 세일즈</div>
-            <div class="quote">담당자별 감에 의존하던 리드 판단을 같은 기준으로 정리할 수 있었습니다.</div>
-            <div class="voice-detail">리드별 자산 신호를 CRM 메모와 함께 관리해 팀 회의에서 우선순위를 더 명확히 공유했습니다.</div>
-          </article>
-          <article class="tile voice-card" data-category="sales">
-            <img class="memoji" src="images/m-23.webp" alt="" aria-hidden="true">
-            <div class="company">J솔루션도입팀 · CRM운영</div>
-            <div class="quote">조회 결과를 내부 고객관리 흐름에 연결하는 방식까지 함께 검토할 수 있었습니다.</div>
-            <div class="voice-detail">API 연동 범위와 관리자 화면 구성을 함께 검토하며 기존 고객관리 프로세스에 맞는 도입안을 만들었습니다.</div>
+          <article class="tile voice-card" data-category="law">
+            <img class="memoji " src="m-20.webp" alt="" aria-hidden="true">
+            <div class="company">Z사 · 채권법무팀</div>
+            <div class="quote">검토 누락이 줄었습니다.</div>
+            <div class="voice-detail">압류와 권리 관계를 표준 항목으로 확인했습니다.</div>
           </article>
         </div>
         <div class="voice-actions">
@@ -1144,7 +1035,7 @@
       </div>
     </section>
 
-    <section class="section center" id="solution" aria-labelledby="solution-title">
+    <section class="section center" id="solution"    <section class="section center" id="solution" aria-labelledby="solution-title">
       <div class="kicker">Solution</div>
       <h2 id="solution-title">소유스캔은 B2B 자산 확인 인프라입니다.</h2>
       <p class="subcopy">조회, 리스크 확인, API 연동을 계약 범위에 맞춰 제공합니다.</p>
@@ -1178,20 +1069,7 @@
 
   </main>
 
-  <footer class="footer">
-    <div class="footer-inner">
-      <div class="footer-line">
-        <span>대표 : 공도현</span>
-        <span>메일문의 : sspluskorea@naevr.com</span>
-        <span>주소 : 대구 동구 장등로 56, 벽산E-솔렌스힐 상가 121호</span>
-      </div>
-      <div class="footer-line">
-        <span>사업자등록번호 : 714-88-02750</span>
-        <span>법인등록번호 : 170111-0900391</span>
-      </div>
-      <div class="footer-copy">Copyright ⓒ 2025 소유스캔 ALL RIGHTS RESERVED.</div>
-    </div>
-  </footer>
+  <footer class="footer">© 소유스캔 · 부동산 소유 현황 API 및 B2B 자산 정보 솔루션</footer>
 
   <div class="modal" id="inquiryModal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="modal-card">
@@ -1219,10 +1097,6 @@
   <div class="toast" id="toast" role="status" aria-live="polite">문의가 접수되었습니다. 영업일 기준 48시간 안에 연락드리겠습니다.</div>
   <button class="top-button" type="button" id="topButton" aria-label="상단으로 이동">↑</button>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js"></script>
-  <script src="soyu-inquiry.js"></script>
-  <script src="soyu-analytics.js"></script>
   <script>
     const header = document.getElementById('header');
     const modal = document.getElementById('inquiryModal');
@@ -1235,43 +1109,30 @@
     modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(); });
     document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeModal(); });
     document.getElementById('inquiryForm').addEventListener('submit', (event) => {
-      window.SoyouInquiry.handleSubmit(event, {
-        onSuccess() {
-          closeModal();
-          toast.textContent = '문의가 접수되었습니다. 영업일 기준 48시간 안에 연락드리겠습니다.';
-          toast.classList.add('is-visible');
-          window.setTimeout(() => toast.classList.remove('is-visible'), 3600);
-        },
-        onError(error) {
-          toast.textContent = error.message || '문의 저장 중 오류가 발생했습니다.';
-          toast.classList.add('is-visible');
-          window.setTimeout(() => toast.classList.remove('is-visible'), 4200);
-        }
-      });
+      event.preventDefault();
+      closeModal();
+      event.currentTarget.reset();
+      toast.classList.add('is-visible');
+      window.setTimeout(() => toast.classList.remove('is-visible'), 3600);
     });
     const syncScroll = () => header.classList.toggle('is-scrolled', window.scrollY > 24);
     window.addEventListener('scroll', syncScroll, { passive: true });
     syncScroll();
     const filterButtons = document.querySelectorAll('.filter-pill');
-    const voiceCards = Array.from(document.querySelectorAll('.voice-card[data-category]'));
+    const caseCards = Array.from(document.querySelectorAll('.voice-card[data-category]'));
     const loadMoreButton = document.querySelector('.voice-load-more');
     let showAllCases = false;
 
-    function getInitialCaseLimit() {
-      return window.innerWidth >= 1320 ? 8 : 6;
-    }
-
     function syncCaseList() {
       const activeFilter = document.querySelector('.filter-pill.is-active')?.dataset.filter || 'all';
-      const matchingCards = voiceCards.filter((card) => activeFilter === 'all' || card.dataset.category === activeFilter);
-      const initialLimit = getInitialCaseLimit();
-      voiceCards.forEach((card) => {
+      const matchingCards = caseCards.filter((card) => activeFilter === 'all' || card.dataset.category === activeFilter);
+      caseCards.forEach((card) => {
         const matchIndex = matchingCards.indexOf(card);
-        const shouldShow = matchIndex !== -1 && (showAllCases || activeFilter !== 'all' || matchIndex < initialLimit);
+        const shouldShow = matchIndex !== -1 && (showAllCases || activeFilter !== 'all' || matchIndex < 6);
         card.classList.toggle('is-hidden', !shouldShow);
       });
       if (loadMoreButton) {
-        const hasMore = activeFilter === 'all' && matchingCards.length > initialLimit;
+        const hasMore = activeFilter === 'all' && matchingCards.length > 6;
         loadMoreButton.hidden = !hasMore;
         loadMoreButton.textContent = showAllCases ? '접기' : '더보기';
       }
@@ -1292,60 +1153,7 @@
       });
     }
 
-    function initTypingCode() {
-      const blocks = Array.from(document.querySelectorAll('[data-typing-code]'));
-      if (!blocks.length) return;
-      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      const typeBlock = (block) => {
-        if (block.dataset.typed === 'true') return;
-        const source = block.dataset.typingSource || block.textContent.trim();
-        block.dataset.typingSource = source;
-        block.dataset.typed = 'true';
-
-        if (prefersReduced) {
-          block.textContent = source;
-          block.classList.add('is-done');
-          return;
-        }
-
-        block.textContent = '';
-        block.classList.add('is-typing');
-        let index = 0;
-        const typeNext = () => {
-          const char = source[index] || '';
-          const step = char === '\n' ? 1 : 2;
-          index = Math.min(index + step, source.length);
-          block.textContent = source.slice(0, index);
-
-          if (index < source.length) {
-            window.setTimeout(typeNext, char === '\n' ? 120 : 18);
-          } else {
-            block.classList.add('is-done');
-          }
-        };
-        typeNext();
-      };
-
-      if ('IntersectionObserver' in window) {
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              typeBlock(entry.target);
-              observer.unobserve(entry.target);
-            }
-          });
-        }, { threshold: 0.28 });
-        blocks.forEach((block) => observer.observe(block));
-        return;
-      }
-
-      blocks.forEach(typeBlock);
-    }
-
-    initTypingCode();
     syncCaseList();
-    window.addEventListener('resize', syncCaseList, { passive: true });
     topButton.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   </script>
 </body>

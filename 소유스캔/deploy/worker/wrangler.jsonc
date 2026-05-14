@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/config-schema.json",
+  "name": "soyu-scan-track",
+  "main": "../cloudflare-worker-track-visit.js",
+  "compatibility_date": "2026-05-14",
+  "vars": {
+    "SUPABASE_EDGE_ENDPOINT": "https://imaoieqwteqwsssicuxr.supabase.co/functions/v1/track-visit",
+    "SUPABASE_ANON_KEY": "set-by-deploy-script"
+  }
+}
