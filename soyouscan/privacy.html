@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>개인정보 수집 및 이용 동의 | 소유스캔</title>
+  <meta name="description" content="소유스캔 개인정보 수집 및 이용 동의 상세 내용">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080912;
+      --panel: #141827;
+      --panel-2: #191e30;
+      --line: rgba(255, 255, 255, 0.1);
+      --accent: #806cff;
+      --accent-2: #a58cff;
+      --text: #f7f8ff;
+      --muted: #aeb3cf;
+      --dim: #7a819d;
+      --good: #43e7b9;
+      --warn: #ffd36a;
+      --max: 980px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background:
+        radial-gradient(circle at 18% 0%, rgba(128, 108, 255, 0.18), transparent 28rem),
+        linear-gradient(180deg, #0a0b15 0%, #080912 100%);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+      word-break: keep-all;
+      letter-spacing: 0;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid var(--line);
+      background: rgba(8, 9, 18, 0.88);
+      backdrop-filter: blur(18px);
+    }
+
+    .header-inner {
+      width: min(var(--max), calc(100% - 36px));
+      height: 72px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #806cff, #54d5ff);
+      box-shadow: 0 0 34px rgba(128, 108, 255, 0.34);
+    }
+
+    .back-link {
+      min-height: 42px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      color: #e9ebff;
+      background: rgba(255, 255, 255, 0.05);
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .hero {
+      width: min(var(--max), calc(100% - 36px));
+      margin: 0 auto;
+      padding: 86px 0 42px;
+      text-align: center;
+    }
+
+    .kicker {
+      color: var(--accent-2);
+      font-size: 14px;
+      font-weight: 950;
+    }
+
+    h1 {
+      margin: 16px auto 0;
+      max-width: 760px;
+      font-size: clamp(36px, 6vw, 64px);
+      line-height: 1.12;
+      font-weight: 950;
+    }
+
+    .summary {
+      margin: 22px auto 0;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.76;
+      font-weight: 650;
+    }
+
+    .content {
+      width: min(var(--max), calc(100% - 36px));
+      margin: 0 auto;
+      padding: 34px 0 96px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .notice {
+      border: 1px solid rgba(255, 211, 106, 0.22);
+      border-radius: 18px;
+      padding: 18px;
+      background: rgba(255, 211, 106, 0.08);
+      color: #f3dfae;
+      line-height: 1.7;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 26px;
+      background: rgba(20, 24, 39, 0.88);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+    }
+
+    .card h2 {
+      margin: 0 0 14px;
+      color: #ffffff;
+      font-size: 22px;
+      line-height: 1.35;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.74;
+      font-size: 15px;
+      font-weight: 620;
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+      margin: 16px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .list li {
+      position: relative;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 15px;
+      font-weight: 620;
+    }
+
+    .list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.75em;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-2);
+      transform: translateY(-50%);
+    }
+
+    .table {
+      display: grid;
+      gap: 1px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      margin-top: 16px;
+      background: var(--line);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      background: rgba(9, 11, 21, 0.92);
+    }
+
+    .row strong,
+    .row span {
+      padding: 15px 16px;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .row strong {
+      color: #ffffff;
+      background: rgba(128, 108, 255, 0.11);
+    }
+
+    .row span {
+      color: var(--muted);
+      font-weight: 620;
+    }
+
+    .footer {
+      border-top: 1px solid var(--line);
+      padding: 28px 0;
+      color: var(--dim);
+      text-align: center;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 640px) {
+      .header-inner,
+      .hero,
+      .content {
+        width: calc(100% - 28px);
+      }
+
+      .header-inner {
+        height: 66px;
+      }
+
+      .brand {
+        font-size: 16px;
+      }
+
+      .back-link {
+        padding: 0 10px;
+        font-size: 12px;
+      }
+
+      .hero {
+        padding-top: 62px;
+      }
+
+      h1 {
+        font-size: 34px;
+      }
+
+      .summary {
+        font-size: 15px;
+      }
+
+      .card {
+        padding: 20px;
+        border-radius: 18px;
+      }
+
+      .row {
+        grid-template-columns: 1fr;
+      }
+
+      .row strong {
+        padding-bottom: 6px;
+      }
+
+      .row span {
+        padding-top: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <a class="brand" href="index-1.html">
+        <span class="brand-mark" aria-hidden="true">⌂</span>
+        소유스캔
+      </a>
+      <a class="back-link" href="index-1.html">랜딩 페이지로 돌아가기</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="kicker">Privacy Consent</div>
+      <h1>개인정보 수집 및 이용 동의</h1>
+      <p class="summary">
+        본 페이지는 소유스캔 문의 및 서비스 이용 과정에서 수집되는 개인정보 항목, 이용 목적, 보유 기간, 이용자의 권리를 안내하기 위한 상세 동의 페이지입니다.
+      </p>
+    </section>
+
+    <section class="content" aria-label="개인정보 수집 및 이용 동의 상세">
+      <div class="notice">
+        이 내용은 첨부 문서인 “개인정보 수집 및 이용 약관”의 조항을 기준으로 랜딩 페이지 문의 흐름에 맞게 정리한 안내문입니다.
+      </div>
+
+      <article class="card">
+        <h2>1. 목적</h2>
+        <p>
+          본 약관은 소유스캔이 이용자의 개인정보를 수집하고 이용하는 방법 및 절차에 대한 내용을 규정합니다. 회사는 개인정보 보호법을 준수하며 개인정보 수집, 이용, 보관 및 처리에 관한 사항을 명확히 고지하고 동의를 받습니다.
+        </p>
+      </article>
+
+      <article class="card">
+        <h2>2. 수집하는 개인정보 항목</h2>
+        <p>서비스 이용 및 문의 응대를 위해 다음 항목을 수집할 수 있습니다.</p>
+        <div class="table" role="table" aria-label="수집 항목">
+          <div class="row" role="row"><strong>기본 식별 정보</strong><span>성명, 생년월일</span></div>
+          <div class="row" role="row"><strong>연락 정보</strong><span>휴대폰 번호 등 연락처</span></div>
+          <div class="row" role="row"><strong>서비스 이용 정보</strong><span>접속 로그, IP 주소</span></div>
+          <div class="row" role="row"><strong>문의 정보</strong><span>회사명, 담당자명, 직책, 문의 유형, 메모 내용</span></div>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>3. 개인정보 수집 및 이용 목적</h2>
+        <ul class="list">
+          <li>본인 확인: 서비스 이용자 확인 및 인증 절차</li>
+          <li>열람형 공공정보 서비스 제공: 이용자가 공공정보를 열람할 수 있도록 지원</li>
+          <li>사용자 식별: 서비스 이용 시 사용자 식별 및 맞춤형 서비스 제공</li>
+          <li>문의 응대: API 계약, 서비스 이용, 자체 솔루션 제작 요청에 대한 검토 및 회신</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>4. 보유 및 이용 기간</h2>
+        <p>
+          회사는 개인정보 수집 목적이 달성되거나 서비스 이용이 종료된 후에도 관련 법령에 의한 보관 의무가 있는 경우를 제외하고는 수집된 개인정보를 일정 기간 동안 보관합니다.
+        </p>
+        <ul class="list">
+          <li>서비스 종료 후 1년 동안 보관</li>
+          <li>관계 법령에 따라 보관해야 할 경우 해당 법령에서 정한 기간 동안 보관</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>5. 동의 거부 및 서비스 이용 제한</h2>
+        <p>
+          이용자는 개인정보 수집 및 이용에 동의하지 않을 수 있습니다. 다만 동의하지 않을 경우 문의 접수, 서비스 안내, 일부 기능 및 서비스 이용이 제한될 수 있습니다.
+        </p>
+      </article>
+
+      <article class="card">
+        <h2>6. 개인정보 제공 및 제3자 제공</h2>
+        <p>
+          회사는 원칙적으로 이용자의 개인정보를 제3자에게 제공하지 않습니다. 다만 법령에 의한 요구가 있는 경우 또는 이용자가 사전에 동의한 경우에 한해 예외적으로 개인정보를 제공할 수 있습니다.
+        </p>
+      </article>
+
+      <article class="card">
+        <h2>7. 안전성 확보 조치</h2>
+        <p>
+          회사는 개인정보를 보호하기 위해 기술적, 관리적 보호조치를 취하고 있으며, 개인정보가 유출되지 않도록 안전하게 처리하기 위해 노력합니다.
+        </p>
+      </article>
+
+      <article class="card">
+        <h2>8. 이용자의 권리와 행사</h2>
+        <p>
+          이용자는 언제든지 본인의 개인정보에 대해 열람, 수정, 삭제를 요청할 수 있습니다. 이 경우 회사는 법령에 따라 필요한 절차를 거쳐 요청 사항을 처리합니다.
+        </p>
+      </article>
+
+      <article class="card">
+        <h2>9. 개인정보 파기 절차 및 방법</h2>
+        <ul class="list">
+          <li>파기 절차: 개인정보 보유 기간 경과, 처리 목적 달성 등 개인정보가 불필요하게 되었을 때 지체 없이 파기합니다.</li>
+          <li>파기 방법: 종이에 출력된 개인정보는 분쇄 또는 소각하며, 전자 파일은 기록을 재생할 수 없는 기술적 방법으로 삭제합니다.</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h2>10. 문의처</h2>
+        <p>
+          개인정보와 관련된 문의는 개인정보 보호 담당 부서로 연락할 수 있습니다. 실제 운영 전 담당 부서명, 이메일, 전화번호를 확정해 본 페이지에 반영해야 합니다.
+        </p>
+      </article>
+    </section>
+  </main>
+
+  <footer class="footer">
+    소유스캔 · 개인정보 수집 및 이용 동의 상세
+  </footer>
+</body>
+</html>
